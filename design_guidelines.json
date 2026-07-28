@@ -1,0 +1,138 @@
+{
+  "theme": "dark_and_light_combo",
+  "archetype": "Archetype 4 (Swiss & High-Contrast) mixed with Archetype 5 (Jewel & Luxury structural feel)",
+  "color_palette": {
+    "primary": "#FFFFFF",
+    "primary_foreground": "#000000",
+    "background_dark": "#050505",
+    "background_light": "#FAFAFA",
+    "surface_dark": "#121212",
+    "surface_light": "#FFFFFF",
+    "border_dark": "rgba(255,255,255,0.1)",
+    "border_light": "rgba(0,0,0,0.08)",
+    "accent_neutral": "#888888",
+    "forbidden_colors": ["purple", "teal", "#9D4CDD", "#1B93A4", "blue-purple gradients"]
+  },
+  "typography": {
+    "headings_font": "Cabinet Grotesk",
+    "body_font": "Inter",
+    "mono_font": "JetBrains Mono",
+    "rules": {
+      "headings": "Tight tracking (tracking-tight or tracking-tighter), font-medium to font-bold.",
+      "body": "Clean, highly readable, tracking-normal.",
+      "labels": "Uppercase, tracking-[0.2em], text-xs, font-semibold."
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous spacing. High contrast. B&W premium SaaS aesthetic.",
+    "section_padding": "py-24 md:py-32",
+    "container": "max-w-7xl mx-auto px-6 md:px-12",
+    "grid_system": "Bento grids with asymmetry for marketing. Strict dense grids for admin dashboard."
+  },
+  "components": {
+    "buttons": "Sharp corners or very slight rounding (rounded-md max). High contrast (white on black, or black on white). hover:scale-[1.02] active:scale-[0.98] transition-transform.",
+    "cards": "1px subtle borders. Glassmorphism only for sticky headers (backdrop-blur-xl bg-white/70 or bg-black/60). Inner cards should use pure flat colors.",
+    "inputs": "Shadcn based. Dark mode inputs: bg-[#121212] border-white/10. Light mode inputs: bg-white border-black/10.",
+    "navbar": "Fixed z-50. Starts transparent. On scroll: backdrop-blur-xl bg-black/50 (dark section) or bg-white/70 (light section).",
+    "testing": "All interactive elements MUST include data-testid attribute (e.g., data-testid='hero-cta-button')"
+  },
+  "pages_and_flows": {
+    "landing_page": {
+      "hero": {
+        "theme": "dark",
+        "features": "Dark gradient background, Typing animation headline ('Join the most action-oriented community'), Interactive 3D sphere (React Three Fiber + Drei).",
+        "cta": "Primary button 'Apply Now' (white text on white/10 bg with glowing hover, or solid white with black text)."
+      },
+      "community_section": {
+        "theme": "light",
+        "layout": "Left: 2 Cards (Student / Founder). Right: Editorial typography text explaining the divide.",
+        "cards_instruction": "Use images provided in media section for backgrounds of these cards."
+      },
+      "problem_section": {
+        "theme": "dark",
+        "layout": "Split layout. Students vs Founders. Thin vertical divider border-white/10."
+      },
+      "solution_section": {
+        "theme": "dark",
+        "layout": "Structured bento grid cards explaining the system."
+      },
+      "social_proof": {
+        "theme": "light",
+        "layout": "Image grid of real networking events, overlaid with big stats: '500+ Members', '20+ Events'."
+      },
+      "final_cta": {
+        "theme": "dark",
+        "headline": "Still thinking? You're already late."
+      }
+    },
+    "application_flows": {
+      "student_page": {
+        "theme": "dark",
+        "form_card": "Light gradient form card (bg-white/5 border-white/10). Fields: Name, College, Course, Email.",
+        "flow": "Apply -> OTP -> Google Drive Link -> Submit.",
+        "benefits": "Grid showing Internships, Events, Hackathons, Bootcamps."
+      },
+      "business_page": {
+        "theme": "dark",
+        "form_card": "Slightly more structured/serious. Fields: Name, Company, Role, Stage, Email."
+      }
+    },
+    "admin_dashboard": {
+      "layout": "Left sidebar (dark bg-[#0A0A0A]), Right dashboard content (light bg-[#FAFAFA]).",
+      "features": "Stats overview, Users table (Students/Business tabs), Approve/Reject actions, Bulk email interface.",
+      "ui_components": "Shadcn tables, badges (pending/approved), dialogs for user details."
+    }
+  },
+  "tech_stack": {
+    "framework": "React (Vite/Next.js context - frontend standard JS)",
+    "styling": "Tailwind CSS",
+    "components": "shadcn/ui",
+    "icons": "lucide-react",
+    "3d_library": "react-three-fiber, @react-three/drei (for the interactive sphere)",
+    "animation": "framer-motion (for typing text, scroll reveals)",
+    "file_type": "jsx and js ONLY. Do not use tsx."
+  },
+  "media": {
+    "hero_background": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/813dd23a-8d65-4d63-95c8-761bba5c45e6/images/489a665d330a5389357edb9359fe5c9c2404447717ac02d92bf90fe8c49b6f1f.png",
+      "description": "Premium black and white abstract texture for the deep background layer"
+    },
+    "student_card_bg": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/813dd23a-8d65-4d63-95c8-761bba5c45e6/images/bd8812c28ebd3c44ffdb13376f61f3e5e80f62ccc5ba07cc792e9ae54df01a88.png",
+      "description": "Minimalist white architectural space for student representation card"
+    },
+    "founder_card_bg": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/813dd23a-8d65-4d63-95c8-761bba5c45e6/images/2a8863dd74e6bb41463dfc70ae032e66493e5ed8827053243ef9529dc9dc0243.png",
+      "description": "Abstract 3D geometric shapes for founder representation card"
+    },
+    "social_proof_events": [
+      {
+        "url": "https://images.unsplash.com/photo-1768508948485-a7adc1f3427f?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzB8MHwxfHNlYXJjaHwyfHxuZXR3b3JraW5nJTIwZXZlbnQlMjBwcm9mZXNzaW9uYWx8ZW58MHx8fHwxNzc0NjE1MTUzfDA&ixlib=rb-4.1.0&q=85",
+        "description": "People mingling at a formal networking event"
+      },
+      {
+        "url": "https://images.pexels.com/photos/35138560/pexels-photo-35138560.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "Bustling trade show exhibition networking"
+      },
+      {
+        "url": "https://images.unsplash.com/photo-1532618793091-ec5fe9635fbd?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwzfHxzdGFydHVwJTIwZm91bmRlcnMlMjBtZWV0aW5nfGVufDB8fHx8MTc3NDYxNTE1NXww&ixlib=rb-4.1.0&q=85",
+        "description": "Startup founders meeting"
+      },
+      {
+        "url": "https://images.pexels.com/photos/6684506/pexels-photo-6684506.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+        "description": "College students studying and networking"
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Install framer-motion, @react-three/fiber, @react-three/drei, and lucide-react.",
+    "Use .js/.jsx extensions strictly.",
+    "Do NOT use placeholder text or URLs. Use ONLY the media URLs provided in this JSON.",
+    "Ensure the hero has an interactive 3D sphere reacting to the mouse pointer.",
+    "In the Admin Dashboard, the left sidebar MUST be dark, and the right main area MUST be light.",
+    "Ensure all buttons, form inputs, links, and key UI components have a data-testid attribute.",
+    "Typography: Use Cabinet Grotesk for Headings, Inter for Body. Apply tight tracking to headings.",
+    "Avoid generic 'SaaS blue' or purple gradients. Stick strictly to the premium black, white, and grayscale palette.",
+    "For the typing animation, utilize framer-motion or a simple react typing effect library."
+  ]
+}
