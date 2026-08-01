@@ -6,6 +6,7 @@ import { Bebas_Neue } from 'next/font/google';
 import {
   ArrowLeft,
   Check,
+  ChevronRight,
   Nfc,
   Infinity as InfinityIcon,
   KeyRound,
@@ -38,10 +39,11 @@ const CORE_BENEFITS = [
 ];
 
 // Sourced from agent-notes/BOC_content_1.docx — replaces the earlier 4-category
-// copy with the expanded 5-category version (headline + hook + bullets + a
-// "Value:" takeaway per category). BOCC = Business Orbit Campus Clubs, a
-// separate sibling platform (not this one) that the distribution/directory
-// benefits route through.
+// copy with the expanded 5-category version (headline + hook + bullets per
+// category). BOCC = Business Orbit Campus Clubs, a separate sibling platform
+// (not this one) that the distribution/directory benefits route through.
+// The doc's "Value:" takeaway line per category was dropped from the UI on
+// request — full text is still in BOC_content_1.docx if it's ever wanted back.
 // BACKEND NOTE: this is static marketing copy, not user/DB data — no fetch or
 // API needed here. Only the order form on /orbit-card/checkout produces real
 // data (see the NOTE at the top of that file + orbit-card-payment-integration.md).
@@ -56,7 +58,6 @@ const CATEGORIES = [
       'Access to premium founder tools',
       'Software, AI, cloud & productivity benefits',
     ],
-    value: 'Reduce your startup costs while building faster.',
   },
   {
     icon: TrendingUp,
@@ -68,14 +69,12 @@ const CATEGORIES = [
       'Community-powered product visibility',
       'Startup showcases and feature opportunities',
     ],
-    value: 'Get your product in front of students, founders, and early adopters.',
   },
   {
     icon: Handshake,
     title: 'Connect with the Right People',
     hook: 'Build meaningful relationships that move your startup forward.',
     items: ['1:1 mentor guidance', 'Investor introductions', 'Founder networking', 'Incubator connections', 'Industry experts'],
-    value: 'Learn from experienced builders and unlock growth opportunities.',
   },
   {
     icon: CalendarDays,
@@ -88,14 +87,12 @@ const CATEGORIES = [
       'Pitch opportunities',
       'Invite-only ecosystem events',
     ],
-    value: "Access opportunities that aren't available to everyone.",
   },
   {
     icon: Megaphone,
     title: 'Marketing & Growth Opportunities',
     hook: "Increase your startup's visibility through curated campaigns.",
     items: ['Featured startup campaigns', 'Community promotions', 'Launch support', 'Marketing collaborations', 'Event partnerships'],
-    value: 'Get discovered by users, investors, and ecosystem partners.',
   },
 ];
 
@@ -109,20 +106,14 @@ function CategoryCard({ cat }: { cat: (typeof CATEGORIES)[number] }) {
         {cat.title}
       </h3>
       <p className="font-glacial text-[14px] text-[#A1A1A1] italic mb-[16px] text-left">{cat.hook}</p>
-      <ul className="space-y-[10px] font-glacial text-[14px] text-[#C4C4C4] leading-[1.5] text-left mb-[20px]">
+      <ul className="space-y-[10px] font-glacial text-[14px] text-[#C4C4C4] leading-[1.5] text-left">
         {cat.items.map((item, j) => (
           <li key={j} className="flex items-start">
-            <span className="text-[#D4FF3F] mr-[10px] mt-[3px] shrink-0">—</span>
+            <ChevronRight className="w-[14px] h-[14px] text-[#D4FF3F] mr-[8px] mt-[3px] shrink-0" />
             <span>{item}</span>
           </li>
         ))}
       </ul>
-      <div className="pt-[16px] border-t border-white/10 flex items-start gap-[8px]">
-        <span className="text-[10px] font-bold text-black bg-[#D4FF3F] rounded-full px-[8px] py-[2px] uppercase tracking-wide shrink-0">
-          Value
-        </span>
-        <span className="text-[13px] text-[#F5F5F5] font-medium leading-[1.5]">{cat.value}</span>
-      </div>
     </div>
   );
 }
