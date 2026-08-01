@@ -2,9 +2,59 @@
 
 import Image from 'next/image';
 import { Nfc } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import logoImg from '../assets/logo.png';
 
-export default function OrbitCardVisual({ compact = false }: { compact?: boolean }) {
+// Renders `name` as individually animated characters — each letter springs in as
+// it's typed and springs out as it's deleted. Neighboring letters reposition via
+// normal DOM reflow (instant, no animation needed for that part); deliberately not
+// using framer-motion's `layout` prop here — under rapid keystrokes it left stale
+// transforms on characters (a FLIP-timing issue when updates arrive faster than the
+// layout animation settles). Falls back to a crossfaded "Your Name Here" placeholder
+// when empty. Index-based keys mean this animates beautifully for the common case
+// (typing/backspacing at the end) — a mid-string edit just updates instantly without
+// an enter/exit flourish, a reasonable tradeoff against a full text-diff animator.
+function AnimatedCardName({ name, compact }: { name: string; compact: boolean }) {
+  const isEmpty = name.trim().length === 0;
+
+  return (
+    <span
+      className={`font-glacial uppercase tracking-wide text-[#F5F5F5] inline-flex flex-nowrap min-w-0 overflow-hidden ${
+        compact ? 'text-[13px]' : 'text-[16px]'
+      }`}
+    >
+      <AnimatePresence initial={false}>
+        {isEmpty ? (
+          <motion.span
+            key="placeholder"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35, ease: 'easeOut' }}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            Your Name Here
+          </motion.span>
+        ) : (
+          name.split('').map((char, i) => (
+            <motion.span
+              key={i}
+              initial={{ opacity: 0, y: 10, scale: 0.7 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.7 }}
+              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+              style={{ display: 'inline-block', whiteSpace: 'pre' }}
+            >
+              {char === ' ' ? ' ' : char}
+            </motion.span>
+          ))
+        )}
+      </AnimatePresence>
+    </span>
+  );
+}
+
+export default function OrbitCardVisual({ compact = false, name = '' }: { compact?: boolean; name?: string }) {
   return (
     <div
       data-testid="orbit-card-visual"
@@ -42,11 +92,9 @@ export default function OrbitCardVisual({ compact = false }: { compact?: boolean
           <div className={`font-mono tracking-[0.15em] text-[#F5F5F5]/90 ${compact ? 'text-[11px] mb-2' : 'text-[15px] mb-3'}`}>
             •••• •••• •••• 0001
           </div>
-          <div className="flex items-end justify-between">
-            <span className={`font-glacial uppercase tracking-wide text-[#F5F5F5] ${compact ? 'text-[13px]' : 'text-[16px]'}`}>
-              Your Name Here
-            </span>
-            <span className="font-mono text-[10px] text-[#A1A1A1]">LIFETIME MEMBER</span>
+          <div className="flex items-end justify-between gap-3">
+            <AnimatedCardName name={name} compact={compact} />
+            <span className="font-mono text-[10px] text-[#A1A1A1] shrink-0">LIFETIME MEMBER</span>
           </div>
         </div>
       </div>

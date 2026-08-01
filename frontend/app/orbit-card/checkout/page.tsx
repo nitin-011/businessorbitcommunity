@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bebas_Neue } from 'next/font/google';
-import { ArrowLeft, AlertCircle } from 'lucide-react';
+import { ArrowLeft, AlertCircle, ChevronDown } from 'lucide-react';
 import InteractiveSphere from '@/components/InteractiveSphere';
 import OrbitCardVisual from '@/components/OrbitCardVisual';
 
@@ -12,6 +12,50 @@ const bebas = Bebas_Neue({ subsets: ['latin'], weight: '400' });
 
 const inputClasses =
   'w-full px-4 py-3 bg-[#FAFAFA] border border-[#E5E7EB] rounded-xl text-[#111111] focus:bg-[#FFFFFF] focus:border-[#D4FF3F] focus:ring-1 focus:ring-[#D4FF3F] focus:outline-none focus:shadow-[0_0_12px_rgba(212,255,63,0.3)] transition-all';
+
+const selectClasses = `${inputClasses} appearance-none pr-10 cursor-pointer`;
+
+// Static reference data — India's states + union territories don't change often
+// enough to warrant an API call; this is baked into the frontend like any other
+// fixed lookup list, same as a country picker would be.
+const INDIAN_STATES = [
+  'Andaman and Nicobar Islands',
+  'Andhra Pradesh',
+  'Arunachal Pradesh',
+  'Assam',
+  'Bihar',
+  'Chandigarh',
+  'Chhattisgarh',
+  'Dadra and Nagar Haveli and Daman and Diu',
+  'Delhi (NCT)',
+  'Goa',
+  'Gujarat',
+  'Haryana',
+  'Himachal Pradesh',
+  'Jammu and Kashmir',
+  'Jharkhand',
+  'Karnataka',
+  'Kerala',
+  'Ladakh',
+  'Lakshadweep',
+  'Madhya Pradesh',
+  'Maharashtra',
+  'Manipur',
+  'Meghalaya',
+  'Mizoram',
+  'Nagaland',
+  'Odisha',
+  'Puducherry',
+  'Punjab',
+  'Rajasthan',
+  'Sikkim',
+  'Tamil Nadu',
+  'Telangana',
+  'Tripura',
+  'Uttar Pradesh',
+  'Uttarakhand',
+  'West Bengal',
+];
 
 function generateOrderReference() {
   return `BOC-${Date.now().toString(36).toUpperCase()}`;
@@ -150,7 +194,7 @@ export default function OrbitCardCheckoutPage() {
 
                   <div>
                     <label htmlFor="checkout-company" className="block text-[#111111] font-medium mb-1.5 text-sm">
-                      Company &amp; Designation <span className="text-[#6B7280] font-normal">(optional)</span>
+                      Company &amp; Designation
                     </label>
                     <input
                       id="checkout-company"
@@ -158,8 +202,9 @@ export default function OrbitCardCheckoutPage() {
                       value={formData.company}
                       onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                       className={inputClasses}
-                      placeholder="Acme Inc. — Founder (or College &amp; Year, if a student)"
+                      placeholder="Acme Inc. — Founder"
                       data-testid="orbit-card-checkout-company-input"
+                      required
                     />
                   </div>
 
@@ -224,16 +269,26 @@ export default function OrbitCardCheckoutPage() {
                     </div>
                     <div>
                       <label htmlFor="checkout-state" className="block text-[#111111] font-medium mb-1.5 text-sm">State</label>
-                      <input
-                        id="checkout-state"
-                        type="text"
-                        value={formData.state}
-                        onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                        className={inputClasses}
-                        placeholder="Maharashtra"
-                        data-testid="orbit-card-checkout-state-input"
-                        required
-                      />
+                      <div className="relative">
+                        <select
+                          id="checkout-state"
+                          value={formData.state}
+                          onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                          className={selectClasses}
+                          data-testid="orbit-card-checkout-state-input"
+                          required
+                        >
+                          <option value="" disabled>
+                            Select a state
+                          </option>
+                          {INDIAN_STATES.map((state) => (
+                            <option key={state} value={state}>
+                              {state}
+                            </option>
+                          ))}
+                        </select>
+                        <ChevronDown className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#6B7280]" />
+                      </div>
                     </div>
                   </div>
 
@@ -311,7 +366,7 @@ export default function OrbitCardCheckoutPage() {
               </h2>
 
               <div className="mb-6">
-                <OrbitCardVisual compact />
+                <OrbitCardVisual compact name={formData.name} />
               </div>
 
               <div className="bg-[#121212] border border-white/10 rounded-xl p-6 mb-6">
