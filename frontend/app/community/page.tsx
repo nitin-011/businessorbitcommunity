@@ -13,9 +13,13 @@ const bebas = Bebas_Neue({ subsets: ['latin'], weight: '400' });
 const inputClasses =
   'w-full px-4 py-3 bg-[#FAFAFA] border border-[#E5E7EB] rounded-xl text-[#111111] focus:bg-[#FFFFFF] focus:border-[#D4FF3F] focus:ring-1 focus:ring-[#D4FF3F] focus:outline-none focus:shadow-[0_0_12px_rgba(212,255,63,0.3)] transition-all';
 
-// Placeholder directory — screens-first per plan. Real members will either be
-// supplied directly or fetched from a database once that's connected; none of
-// this is real data.
+// BACKEND HANDOFF — this array is placeholder data only (screens-first build).
+// Replace it with a real fetch once the member directory endpoint exists —
+// each object must match the `CommunityMember` shape exported from
+// `components/CommunityMemberCard.tsx` (name, role, bio, linkedin, instagram,
+// phone, email, optional photoUrl). No pagination/loading/error states exist
+// yet since there's no live endpoint to hit — add those when wiring the real
+// fetch in (e.g. TanStack Query, matching the pattern in `lib/api.ts`).
 const PLACEHOLDER_MEMBERS: CommunityMember[] = [
   {
     name: 'Aditi Sharma',
@@ -217,7 +221,7 @@ export default function CommunityPage() {
 
                 <div
                   data-testid="community-member-grid"
-                  className="grid grid-cols-1 lg:grid-cols-2 gap-8"
+                  className="grid grid-cols-1 gap-6"
                 >
                   {PLACEHOLDER_MEMBERS.map((member) => (
                     <CommunityMemberCard key={member.email} member={member} />
