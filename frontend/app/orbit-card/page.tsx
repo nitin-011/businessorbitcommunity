@@ -99,6 +99,34 @@ const CATEGORIES = [
   },
 ];
 
+function CategoryCard({ cat }: { cat: (typeof CATEGORIES)[number] }) {
+  return (
+    <div className="bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-[16px] p-[32px] transition-all duration-300 hover:-translate-y-[4px] hover:bg-white/[0.06] hover:border-white/20 hover:shadow-[0_20px_50px_rgba(212,255,63,0.12)]">
+      <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 mb-[20px] mx-auto sm:mx-0">
+        <cat.icon className="w-[20px] h-[20px] text-[#D4FF3F]" />
+      </div>
+      <h3 className="font-glacial text-[20px] text-[#F5F5F5] font-bold mb-[8px] text-center sm:text-left">
+        {cat.title}
+      </h3>
+      <p className="font-glacial text-[14px] text-[#A1A1A1] italic mb-[16px] text-left">{cat.hook}</p>
+      <ul className="space-y-[10px] font-glacial text-[14px] text-[#C4C4C4] leading-[1.5] text-left mb-[20px]">
+        {cat.items.map((item, j) => (
+          <li key={j} className="flex items-start">
+            <span className="text-[#D4FF3F] mr-[10px] mt-[3px] shrink-0">—</span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="pt-[16px] border-t border-white/10 flex items-start gap-[8px]">
+        <span className="text-[10px] font-bold text-black bg-[#D4FF3F] rounded-full px-[8px] py-[2px] uppercase tracking-wide shrink-0">
+          Value
+        </span>
+        <span className="text-[13px] text-[#F5F5F5] font-medium leading-[1.5]">{cat.value}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function OrbitCardPage() {
   return (
     <>
@@ -177,8 +205,13 @@ export default function OrbitCardPage() {
               </div>
             ))}
           </motion.div>
+        </div>
 
-          {/* BENEFIT CATEGORIES */}
+        {/* BENEFIT CATEGORIES — wider container than the rest of the page so
+            cards get more horizontal room; less bullet-text wrapping means
+            shorter cards and less scrolling. Rest of the page stays at
+            max-w-3xl deliberately (hero/pricing/T&Cs read better narrow). */}
+        <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-8 text-center">
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -205,42 +238,24 @@ export default function OrbitCardPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20 text-left"
+            className="mb-20 text-left"
           >
-            {CATEGORIES.map((cat, i) => (
-              <div
-                key={i}
-                className={`bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-[16px] p-[32px] transition-all duration-300 hover:-translate-y-[4px] hover:bg-white/[0.06] hover:border-white/20 hover:shadow-[0_20px_50px_rgba(212,255,63,0.12)] ${
-                  i === CATEGORIES.length - 1 ? 'md:col-span-2' : ''
-                }`}
-              >
-                <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 mb-[20px] mx-auto sm:mx-0">
-                  <cat.icon className="w-[20px] h-[20px] text-[#D4FF3F]" />
-                </div>
-                <h3 className="font-glacial text-[20px] text-[#F5F5F5] font-bold mb-[8px] text-center sm:text-left">
-                  {cat.title}
-                </h3>
-                <p className="font-glacial text-[14px] text-[#A1A1A1] italic mb-[16px] text-left">
-                  {cat.hook}
-                </p>
-                <ul className="space-y-[10px] font-glacial text-[14px] text-[#C4C4C4] leading-[1.5] text-left mb-[20px]">
-                  {cat.items.map((item, j) => (
-                    <li key={j} className="flex items-start">
-                      <span className="text-[#D4FF3F] mr-[10px] mt-[3px] shrink-0">—</span>
-                      <span>{item}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="pt-[16px] border-t border-white/10 flex items-start gap-[8px]">
-                  <span className="text-[10px] font-bold text-black bg-[#D4FF3F] rounded-full px-[8px] py-[2px] uppercase tracking-wide shrink-0">
-                    Value
-                  </span>
-                  <span className="text-[13px] text-[#F5F5F5] font-medium leading-[1.5]">{cat.value}</span>
-                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {CATEGORIES.slice(0, -1).map((cat, i) => (
+                <CategoryCard key={i} cat={cat} />
+              ))}
+            </div>
+            {/* Odd one out — same size as the rest, centered rather than
+                stretched full-width, so it doesn't look like a different tier. */}
+            <div className="mt-6 flex justify-center">
+              <div className="w-full md:w-[calc(50%-12px)]">
+                <CategoryCard cat={CATEGORIES[CATEGORIES.length - 1]} />
               </div>
-            ))}
+            </div>
           </motion.div>
+        </div>
 
+        <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-8 text-center">
           {/* TERMS & CONDITIONS */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
