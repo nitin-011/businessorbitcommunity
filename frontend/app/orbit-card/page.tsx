@@ -42,6 +42,9 @@ const CORE_BENEFITS = [
 // "Value:" takeaway per category). BOCC = Business Orbit Campus Clubs, a
 // separate sibling platform (not this one) that the distribution/directory
 // benefits route through.
+// BACKEND NOTE: this is static marketing copy, not user/DB data — no fetch or
+// API needed here. Only the order form on /orbit-card/checkout produces real
+// data (see the NOTE at the top of that file + orbit-card-payment-integration.md).
 const CATEGORIES = [
   {
     icon: Gift,
@@ -207,32 +210,32 @@ export default function OrbitCardPage() {
             {CATEGORIES.map((cat, i) => (
               <div
                 key={i}
-                className={`bg-[#FFFFFF] border border-[#E5E7EB] rounded-[16px] p-[32px] transition-all duration-300 hover:-translate-y-[4px] hover:shadow-[0_12px_30px_rgba(0,0,0,0.15)] ${
+                className={`bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-[16px] p-[32px] transition-all duration-300 hover:-translate-y-[4px] hover:bg-white/[0.06] hover:border-white/20 hover:shadow-[0_20px_50px_rgba(212,255,63,0.12)] ${
                   i === CATEGORIES.length - 1 ? 'md:col-span-2' : ''
                 }`}
               >
-                <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-[#FAFAFA] border border-[#E5E7EB] mb-[20px] mx-auto sm:mx-0">
-                  <cat.icon className="w-[20px] h-[20px] text-[#111111]" />
+                <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 mb-[20px] mx-auto sm:mx-0">
+                  <cat.icon className="w-[20px] h-[20px] text-[#D4FF3F]" />
                 </div>
-                <h3 className="font-glacial text-[20px] text-[#111111] font-bold mb-[8px] text-center sm:text-left">
+                <h3 className="font-glacial text-[20px] text-[#F5F5F5] font-bold mb-[8px] text-center sm:text-left">
                   {cat.title}
                 </h3>
-                <p className="font-glacial text-[14px] text-[#6B7280] italic mb-[16px] text-left">
+                <p className="font-glacial text-[14px] text-[#A1A1A1] italic mb-[16px] text-left">
                   {cat.hook}
                 </p>
-                <ul className="space-y-[10px] font-glacial text-[14px] text-[#6B7280] leading-[1.5] text-left mb-[20px]">
+                <ul className="space-y-[10px] font-glacial text-[14px] text-[#C4C4C4] leading-[1.5] text-left mb-[20px]">
                   {cat.items.map((item, j) => (
                     <li key={j} className="flex items-start">
-                      <span className="text-[#86A810] mr-[10px] mt-[3px] shrink-0">—</span>
+                      <span className="text-[#D4FF3F] mr-[10px] mt-[3px] shrink-0">—</span>
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
-                <div className="pt-[16px] border-t border-[#F3F4F6] flex items-start gap-[8px]">
-                  <span className="text-[11px] font-bold text-[#86A810] uppercase tracking-wide shrink-0 mt-[1px]">
+                <div className="pt-[16px] border-t border-white/10 flex items-start gap-[8px]">
+                  <span className="text-[10px] font-bold text-black bg-[#D4FF3F] rounded-full px-[8px] py-[2px] uppercase tracking-wide shrink-0">
                     Value
                   </span>
-                  <span className="text-[13px] text-[#111111] font-medium leading-[1.5]">{cat.value}</span>
+                  <span className="text-[13px] text-[#F5F5F5] font-medium leading-[1.5]">{cat.value}</span>
                 </div>
               </div>
             ))}
