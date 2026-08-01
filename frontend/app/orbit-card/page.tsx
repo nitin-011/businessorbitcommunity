@@ -11,8 +11,9 @@ import {
   KeyRound,
   Gift,
   CalendarDays,
-  Users,
-  Lightbulb,
+  TrendingUp,
+  Handshake,
+  Megaphone,
 } from 'lucide-react';
 import InteractiveSphere from '@/components/InteractiveSphere';
 import OrbitCardVisual from '@/components/OrbitCardVisual';
@@ -36,26 +37,62 @@ const CORE_BENEFITS = [
   },
 ];
 
+// Sourced from agent-notes/BOC_content_1.docx — replaces the earlier 4-category
+// copy with the expanded 5-category version (headline + hook + bullets + a
+// "Value:" takeaway per category). BOCC = Business Orbit Campus Clubs, a
+// separate sibling platform (not this one) that the distribution/directory
+// benefits route through.
 const CATEGORIES = [
   {
     icon: Gift,
-    title: 'Partner Benefits',
-    items: ['AWS Credits', 'Microsoft Azure Credits', 'Other partner discounts', 'Startup tools & software benefits'],
+    title: 'Exclusive Startup Perks & Partner Credits',
+    hook: 'Save thousands on the tools every startup needs.',
+    items: [
+      'Free credits from leading startup platforms',
+      'Exclusive partner offers & discounts',
+      'Access to premium founder tools',
+      'Software, AI, cloud & productivity benefits',
+    ],
+    value: 'Reduce your startup costs while building faster.',
+  },
+  {
+    icon: TrendingUp,
+    title: 'Grow Faster with BOCC Distribution',
+    hook: 'Reach the right audience without spending months building visibility.',
+    items: [
+      'Access to the BOCC Student Distribution Network',
+      'Content promotion across Business Orbit channels',
+      'Community-powered product visibility',
+      'Startup showcases and feature opportunities',
+    ],
+    value: 'Get your product in front of students, founders, and early adopters.',
+  },
+  {
+    icon: Handshake,
+    title: 'Connect with the Right People',
+    hook: 'Build meaningful relationships that move your startup forward.',
+    items: ['1:1 mentor guidance', 'Investor introductions', 'Founder networking', 'Incubator connections', 'Industry experts'],
+    value: 'Learn from experienced builders and unlock growth opportunities.',
   },
   {
     icon: CalendarDays,
-    title: 'Exclusive Events',
-    items: ['Founder Meetups', 'Private Networking Sessions', 'Exclusive Dinners', 'Closed-Door Events'],
+    title: 'Exclusive Events & High-Value Opportunities',
+    hook: 'Go beyond public events.',
+    items: [
+      'Members-only networking sessions',
+      'Startup meetups',
+      'Founder roundtables',
+      'Pitch opportunities',
+      'Invite-only ecosystem events',
+    ],
+    value: "Access opportunities that aren't available to everyone.",
   },
   {
-    icon: Users,
-    title: 'BOCC Student Directory',
-    items: ['Access to student founders and startup teams from the BOCC platform'],
-  },
-  {
-    icon: Lightbulb,
-    title: '"Let’s Build an Idea Together"',
-    items: ['Our team works with you to turn your idea into a real business — guidance, connections, and hands-on support along the way.'],
+    icon: Megaphone,
+    title: 'Marketing & Growth Opportunities',
+    hook: "Increase your startup's visibility through curated campaigns.",
+    items: ['Featured startup campaigns', 'Community promotions', 'Launch support', 'Marketing collaborations', 'Event partnerships'],
+    value: 'Get discovered by users, investors, and ecosystem partners.',
   },
 ];
 
@@ -138,16 +175,27 @@ export default function OrbitCardPage() {
             ))}
           </motion.div>
 
-          {/* FOUR BENEFIT CATEGORIES */}
+          {/* BENEFIT CATEGORIES */}
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className={`${bebas.className} text-[28px] md:text-[36px] text-[#F5F5F5] uppercase leading-[1.1] mb-10`}
+            className={`${bebas.className} text-[28px] md:text-[36px] text-[#F5F5F5] uppercase leading-[1.1] mb-4`}
           >
             What&apos;s inside the Portal
           </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.05 }}
+            className="text-[15px] md:text-[16px] text-[#A1A1A1] max-w-2xl mx-auto mb-10"
+          >
+            The Orbit Card gives you exclusive access to resources, opportunities, and a
+            community designed to help founders launch, grow, and raise capital.
+          </motion.p>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -159,15 +207,20 @@ export default function OrbitCardPage() {
             {CATEGORIES.map((cat, i) => (
               <div
                 key={i}
-                className="bg-[#FFFFFF] border border-[#E5E7EB] rounded-[16px] p-[32px] transition-all duration-300 hover:-translate-y-[4px] hover:shadow-[0_12px_30px_rgba(0,0,0,0.15)]"
+                className={`bg-[#FFFFFF] border border-[#E5E7EB] rounded-[16px] p-[32px] transition-all duration-300 hover:-translate-y-[4px] hover:shadow-[0_12px_30px_rgba(0,0,0,0.15)] ${
+                  i === CATEGORIES.length - 1 ? 'md:col-span-2' : ''
+                }`}
               >
                 <div className="flex items-center justify-center w-[48px] h-[48px] rounded-full bg-[#FAFAFA] border border-[#E5E7EB] mb-[20px] mx-auto sm:mx-0">
                   <cat.icon className="w-[20px] h-[20px] text-[#111111]" />
                 </div>
-                <h3 className="font-glacial text-[20px] text-[#111111] font-bold mb-[16px] text-center sm:text-left">
+                <h3 className="font-glacial text-[20px] text-[#111111] font-bold mb-[8px] text-center sm:text-left">
                   {cat.title}
                 </h3>
-                <ul className="space-y-[10px] font-glacial text-[14px] text-[#6B7280] leading-[1.5] text-left">
+                <p className="font-glacial text-[14px] text-[#6B7280] italic mb-[16px] text-left">
+                  {cat.hook}
+                </p>
+                <ul className="space-y-[10px] font-glacial text-[14px] text-[#6B7280] leading-[1.5] text-left mb-[20px]">
                   {cat.items.map((item, j) => (
                     <li key={j} className="flex items-start">
                       <span className="text-[#86A810] mr-[10px] mt-[3px] shrink-0">—</span>
@@ -175,6 +228,12 @@ export default function OrbitCardPage() {
                     </li>
                   ))}
                 </ul>
+                <div className="pt-[16px] border-t border-[#F3F4F6] flex items-start gap-[8px]">
+                  <span className="text-[11px] font-bold text-[#86A810] uppercase tracking-wide shrink-0 mt-[1px]">
+                    Value
+                  </span>
+                  <span className="text-[13px] text-[#111111] font-medium leading-[1.5]">{cat.value}</span>
+                </div>
               </div>
             ))}
           </motion.div>
