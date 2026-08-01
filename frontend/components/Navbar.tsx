@@ -75,6 +75,14 @@ export default function Navbar() {
               </Link>
 
               <Link
+                href="/community"
+                data-testid="nav-community-link"
+                className="text-[16px] text-[#F5F5F5] opacity-80 hover:opacity-100 hover:text-[#D4FF3F] transition-all"
+              >
+                Access to Community
+              </Link>
+
+              <Link
                 href="/join"
                 data-testid="nav-join-cta"
                 className={`${bebas.className} px-[24px] py-[10px] bg-[#D4FF3F] text-black rounded-full text-[18px] md:text-[20px] uppercase font-normal tracking-wide hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(212,255,63,0.4)] transition-all flex items-center justify-center`}
@@ -112,6 +120,14 @@ export default function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   For Business
+                </Link>
+
+                <Link
+                  href="/community"
+                  className="text-[18px] text-[#F5F5F5] opacity-90 transition-opacity"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Access to Community
                 </Link>
 
                 <Link
