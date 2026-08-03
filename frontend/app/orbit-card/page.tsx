@@ -175,7 +175,7 @@ export default function OrbitCardPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-16"
           >
-            <OrbitCardVisual />
+            <OrbitCardVisual interactive />
           </motion.div>
 
           {/* CORE PRODUCT BENEFITS */}
@@ -247,7 +247,11 @@ export default function OrbitCardPage() {
         </div>
 
         <div className="relative z-10 max-w-3xl mx-auto px-6 md:px-8 text-center">
-          {/* TERMS & CONDITIONS */}
+          {/* TERMS & CONDITIONS — finalized copy as of 2026-08-03, mirrored
+              in agent-notes/orbit-card-content-spec.md for anyone (legal,
+              support, backend) who wants the plain-text version. No refund
+              policy of any kind — item 2 is deliberately a flat statement,
+              don't add refund conditions/windows back in. */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -263,13 +267,17 @@ export default function OrbitCardPage() {
                 Membership is non-transferable and tied to the verified details used at order.
               </li>
               <li className="text-[13px] text-[#A1A1A1] leading-[1.6]">
-                Refunds are available within 7 days of purchase, no questions asked.
+                All purchases are final and non-refundable.
+              </li>
+              <li className="text-[13px] text-[#A1A1A1] leading-[1.6]">
+                Membership is lifetime — no expiry, no renewal.
               </li>
               <li className="text-[13px] text-[#A1A1A1] leading-[1.6]">
                 Access to events and sessions is subject to availability and may be limited by seat count.
               </li>
               <li className="text-[13px] text-[#A1A1A1] leading-[1.6]">
-                Full terms will be provided at launch — this is placeholder copy for now.
+                All upcoming opportunities, benefits, and features are included as part of your
+                membership at no additional cost.
               </li>
             </ul>
           </motion.div>
@@ -301,7 +309,7 @@ export default function OrbitCardPage() {
               <span className="text-[#D1D5DB]">•</span>
               <span>One-time payment</span>
               <span className="text-[#D1D5DB]">•</span>
-              <span>7-day refund window</span>
+              <span>Lifetime access</span>
             </div>
           </motion.div>
         </div>

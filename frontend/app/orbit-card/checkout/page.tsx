@@ -69,6 +69,12 @@ export default function OrbitCardCheckoutPage() {
   // agent-notes/orbit-card-payment-integration.md for the planned real flow.
   // The 'error' status branch below is scaffolded for that future integration;
   // nothing in the current mock can actually trigger it.
+  // BACKEND NOTE: `formData.name` and `formData.company` aren't just order data —
+  // they're what gets printed on the back of the physical card (see the
+  // PRODUCTION/BACKEND NOTE atop components/OrbitCardVisual.tsx and
+  // agent-notes/orbit-card-content-spec.md). Whatever real order pipeline
+  // replaces this mock needs to carry those two fields through to card
+  // production, not just to a database record.
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -366,7 +372,10 @@ export default function OrbitCardCheckoutPage() {
               </h2>
 
               <div className="mb-6">
-                <OrbitCardVisual compact name={formData.name} />
+                {/* Starts on the back face since that's where the live name/
+                    designation preview now lives (front is wordmark-only) —
+                    still flippable to see the front. */}
+                <OrbitCardVisual compact interactive defaultSide="back" name={formData.name} designation={formData.company} />
               </div>
 
               <div className="bg-[#121212] border border-white/10 rounded-xl p-6 mb-6">
@@ -394,7 +403,7 @@ export default function OrbitCardCheckoutPage() {
                 <span className="text-[#333]">•</span>
                 <span>One-time payment</span>
                 <span className="text-[#333]">•</span>
-                <span>7-day refund window</span>
+                <span>Lifetime access</span>
               </div>
             </div>
           </div>

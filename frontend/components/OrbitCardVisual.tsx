@@ -1,28 +1,32 @@
 'use client';
 
-import Image from 'next/image';
-import { Nfc } from 'lucide-react';
+import { useState } from 'react';
+import { Nfc, RotateCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import logoImg from '../assets/logo.png';
 
-// Renders `name` as individually animated characters — each letter springs in as
+// Renders `text` as individually animated characters — each letter springs in as
 // it's typed and springs out as it's deleted. Neighboring letters reposition via
 // normal DOM reflow (instant, no animation needed for that part); deliberately not
 // using framer-motion's `layout` prop here — under rapid keystrokes it left stale
 // transforms on characters (a FLIP-timing issue when updates arrive faster than the
-// layout animation settles). Falls back to a crossfaded "Your Name Here" placeholder
-// when empty. Index-based keys mean this animates beautifully for the common case
-// (typing/backspacing at the end) — a mid-string edit just updates instantly without
-// an enter/exit flourish, a reasonable tradeoff against a full text-diff animator.
-function AnimatedCardName({ name, compact }: { name: string; compact: boolean }) {
-  const isEmpty = name.trim().length === 0;
+// layout animation settles). Falls back to a crossfaded placeholder when empty.
+// Index-based keys mean this animates beautifully for the common case (typing/
+// backspacing at the end) — a mid-string edit just updates instantly without an
+// enter/exit flourish, a reasonable tradeoff against a full text-diff animator.
+// Shared by both the name and designation lines on the card's back face.
+function AnimatedCardText({
+  text,
+  placeholder,
+  className,
+}: {
+  text: string;
+  placeholder: string;
+  className: string;
+}) {
+  const isEmpty = text.trim().length === 0;
 
   return (
-    <span
-      className={`font-glacial uppercase tracking-wide text-[#F5F5F5] inline-flex flex-nowrap min-w-0 overflow-hidden ${
-        compact ? 'text-[13px]' : 'text-[16px]'
-      }`}
-    >
+    <span className={`inline-flex flex-nowrap min-w-0 overflow-hidden ${className}`}>
       <AnimatePresence initial={false}>
         {isEmpty ? (
           <motion.span
@@ -33,10 +37,10 @@ function AnimatedCardName({ name, compact }: { name: string; compact: boolean })
             transition={{ duration: 0.35, ease: 'easeOut' }}
             style={{ whiteSpace: 'nowrap' }}
           >
-            Your Name Here
+            {placeholder}
           </motion.span>
         ) : (
-          name.split('').map((char, i) => (
+          text.split('').map((char, i) => (
             <motion.span
               key={i}
               initial={{ opacity: 0, y: 10, scale: 0.7 }}
@@ -45,7 +49,7 @@ function AnimatedCardName({ name, compact }: { name: string; compact: boolean })
               transition={{ type: 'spring', stiffness: 450, damping: 30 }}
               style={{ display: 'inline-block', whiteSpace: 'pre' }}
             >
-              {char === ' ' ? ' ' : char}
+              {char === ' ' ? ' ' : char}
             </motion.span>
           ))
         )}
@@ -54,50 +58,136 @@ function AnimatedCardName({ name, compact }: { name: string; compact: boolean })
   );
 }
 
-export default function OrbitCardVisual({ compact = false, name = '' }: { compact?: boolean; name?: string }) {
+// PRODUCTION / BACKEND NOTE — this component is the source of truth for what
+// actually gets printed/encoded on the physical NFC card. Plain-text version
+// of both faces + the finalized T&Cs also live in
+// agent-notes/orbit-card-content-spec.md for anyone who doesn't want to read
+// component code (e.g. whoever handles card printing/encoding).
+//   FRONT — wordmark only ("ORBIT CARD"), nothing else: no logo, no member
+//     data, no NFC glyph. Deliberately minimal per spec.
+//   BACK — member Name + Designation (sourced live from the checkout form —
+//     `formData.name` / `formData.company` in app/orbit-card/checkout/page.tsx
+//     — "Designation" here is really that form's single combined "Company &
+//     Designation" free-text field, not two separate values) + an NFC tap
+//     indicator + the lifetime-membership tag.
+function CardFace({
+  side,
+  compact,
+  children,
+}: {
+  side: 'front' | 'back';
+  compact: boolean;
+  children: React.ReactNode;
+}) {
   return (
     <div
-      data-testid="orbit-card-visual"
-      className={`relative overflow-hidden rounded-2xl border border-[#D4FF3F]/40 bg-gradient-to-br from-[#151515] to-[#0A0A0A] shadow-[0_0_40px_rgba(212,255,63,0.12)] mx-auto ${
-        compact ? 'w-full max-w-[280px] aspect-[380/240]' : 'w-full max-w-[380px] aspect-[380/240]'
-      }`}
+      className="absolute inset-0 rounded-2xl overflow-hidden border border-[#D4FF3F]/40 bg-gradient-to-br from-[#151515] to-[#0A0A0A] shadow-[0_0_40px_rgba(212,255,63,0.12)]"
+      style={{
+        backfaceVisibility: 'hidden',
+        WebkitBackfaceVisibility: 'hidden',
+        transform: side === 'back' ? 'rotateY(180deg)' : undefined,
+      }}
     >
       {/* Noise Texture Overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-0 opacity-[0.04]"
         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
       />
-
       {/* Corner Glow */}
       <div className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 bg-[#D4FF3F]/20 blur-3xl rounded-full" />
 
-      <div className={`relative z-10 h-full flex flex-col justify-between ${compact ? 'p-4' : 'p-6'}`}>
-        <div className="flex items-center justify-between">
-          <Image
-            src={logoImg}
-            alt="Business Orbit"
-            quality={100}
-            unoptimized
-            className={compact ? 'h-5 w-auto object-contain' : 'h-7 w-auto object-contain'}
-          />
-          <div className="flex items-center gap-1.5">
-            <span className="font-glacial text-[10px] uppercase tracking-[0.2em] text-[#D4FF3F]">
-              Orbit Card
-            </span>
-            <Nfc className={compact ? 'w-3 h-3 text-[#D4FF3F]' : 'w-4 h-4 text-[#D4FF3F]'} />
-          </div>
-        </div>
+      <div className={`relative z-10 h-full flex flex-col justify-between ${compact ? 'p-4' : 'p-6'}`}>{children}</div>
+    </div>
+  );
+}
 
-        <div>
-          <div className={`font-mono tracking-[0.15em] text-[#F5F5F5]/90 ${compact ? 'text-[11px] mb-2' : 'text-[15px] mb-3'}`}>
-            •••• •••• •••• 0001
-          </div>
-          <div className="flex items-end justify-between gap-3">
-            <AnimatedCardName name={name} compact={compact} />
-            <span className="font-mono text-[10px] text-[#A1A1A1] shrink-0">LIFETIME MEMBER</span>
-          </div>
-        </div>
+export default function OrbitCardVisual({
+  compact = false,
+  name = '',
+  designation = '',
+  interactive = false,
+  defaultSide = 'front',
+}: {
+  compact?: boolean;
+  name?: string;
+  designation?: string;
+  interactive?: boolean;
+  defaultSide?: 'front' | 'back';
+}) {
+  const [flipped, setFlipped] = useState(defaultSide === 'back');
+
+  return (
+    <div className="w-full">
+      <div
+        data-testid="orbit-card-visual"
+        onClick={interactive ? () => setFlipped((f) => !f) : undefined}
+        className={`relative mx-auto ${
+          compact ? 'w-full max-w-[280px] aspect-[380/240]' : 'w-full max-w-[380px] aspect-[380/240]'
+        } ${interactive ? 'cursor-pointer' : ''}`}
+        style={{ perspective: '1200px' }}
+      >
+        <motion.div
+          className="relative w-full h-full"
+          style={{ transformStyle: 'preserve-3d' }}
+          animate={{ rotateY: flipped ? 180 : 0 }}
+          transition={{ duration: 0.6, ease: 'easeInOut' }}
+        >
+          {/* FRONT — "Orbit Card" wordmark, nothing else */}
+          <CardFace side="front" compact={compact}>
+            <div className="h-full flex items-center justify-center">
+              <span
+                className={`font-glacial uppercase tracking-[0.25em] text-[#F5F5F5] ${
+                  compact ? 'text-[18px]' : 'text-[24px] md:text-[28px]'
+                }`}
+              >
+                Orbit Card
+              </span>
+            </div>
+          </CardFace>
+
+          {/* BACK — member details + NFC indicator */}
+          <CardFace side="back" compact={compact}>
+            <div className="flex items-center gap-1.5">
+              <Nfc className={compact ? 'w-3 h-3 text-[#D4FF3F]' : 'w-4 h-4 text-[#D4FF3F]'} />
+              <span className="font-glacial text-[10px] uppercase tracking-[0.2em] text-[#D4FF3F]">
+                Tap to Connect
+              </span>
+            </div>
+
+            <div>
+              <AnimatedCardText
+                text={name}
+                placeholder="Your Name Here"
+                className={`font-glacial uppercase tracking-wide text-[#F5F5F5] mb-1 ${
+                  compact ? 'text-[13px]' : 'text-[16px]'
+                }`}
+              />
+              <div className="flex items-end justify-between gap-3">
+                <AnimatedCardText
+                  text={designation}
+                  placeholder="Your Designation Here"
+                  className={`font-glacial text-[#A1A1A1] ${compact ? 'text-[10px]' : 'text-[12px]'}`}
+                />
+                <span className="font-mono text-[10px] text-[#A1A1A1] shrink-0">LIFETIME MEMBER</span>
+              </div>
+            </div>
+          </CardFace>
+        </motion.div>
       </div>
+
+      {interactive && (
+        <div className="mt-3 flex justify-center">
+          <button
+            type="button"
+            onClick={() => setFlipped((f) => !f)}
+            data-testid="orbit-card-visual-flip-button"
+            className="inline-flex items-center gap-1.5 text-[12px] text-[#A1A1A1] hover:text-[#F5F5F5] transition-colors"
+          >
+            <RotateCw className="w-3 h-3" />
+            Tap to flip
+          </button>
+        </div>
+      )}
 
       {/* Local font-glacial style (matches the rest of the app's per-component pattern) */}
       <style
