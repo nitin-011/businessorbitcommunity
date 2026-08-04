@@ -180,3 +180,19 @@ export const uploadPhoto = async (req: AuthRequest, res: Response) => {
       .json({ success: false, message: "Internal server error" });
   }
 };
+
+export const getMe = async (req: AuthRequest, res: Response) => {
+  try {
+    const memberId = req.member?.id;
+    if (!memberId) return res.status(401).json({ success: false, message: "Unauthorized" });
+
+    const member = await CommunityMember.findById(memberId).select("-password -__v");
+    if (!member) return res.status(404).json({ success: false, message: "Member not found" });
+    if (member.status !== "active") return res.status(403).json({ success: false, message: "Account is inactive" });
+
+    return res.status(200).json({ success: true, data: member });
+  } catch (error) {
+    console.error("Get me error:", error);
+    return res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

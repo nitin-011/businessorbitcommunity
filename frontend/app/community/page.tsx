@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Bebas_Neue } from "next/font/google";
@@ -17,88 +17,48 @@ const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400" });
 const inputClasses =
   "w-full px-4 py-3 bg-[#FAFAFA] border border-[#E5E7EB] rounded-xl text-[#111111] focus:bg-[#FFFFFF] focus:border-[#D4FF3F] focus:ring-1 focus:ring-[#D4FF3F] focus:outline-none focus:shadow-[0_0_12px_rgba(212,255,63,0.3)] transition-all";
 
-// BACKEND HANDOFF — this array is placeholder data only (screens-first build).
-// Replace it with a real fetch once the member directory endpoint exists —
-// each object must match the `CommunityMember` shape exported from
-// `components/CommunityMemberCard.tsx` (name, role, bio, linkedin, instagram,
-// phone, email, optional photoUrl). No pagination/loading/error states exist
-// yet since there's no live endpoint to hit — add those when wiring the real
-// fetch in (e.g. TanStack Query, matching the pattern in `lib/api.ts`).
-const PLACEHOLDER_MEMBERS: CommunityMember[] = [
-  {
-    name: "Aditi Sharma",
-    role: "Founder, Loopwave Robotics",
-    bio: "Building autonomous delivery robots for last-mile logistics. Previously led hardware for three years at a Bangalore-based drone startup before going out on her own. Always up for a conversation about robotics, manufacturing, or early-stage hardware fundraising.",
-    linkedin: "#",
-    instagram: "#",
-    phone: "+91 90000 00001",
-    email: "aditi.sharma@example.com",
-  },
-  {
-    name: "Rohan Mehta",
-    role: "B.Tech CS, IIT Delhi",
-    bio: "Full-stack developer exploring generative AI applications in edtech. Shipped two hackathon-winning projects in the last year and is currently building an AI-assisted note-taking tool on the side. Looking for internships and technical co-founders.",
-    linkedin: "#",
-    instagram: "#",
-    phone: "+91 90000 00002",
-    email: "rohan.mehta@example.com",
-  },
-  {
-    name: "Priya Nair",
-    role: "Product Designer, Studio Nine",
-    bio: "Design partner for early-stage founders, helping them go from idea to shippable product. Previously led design at two Series A startups across fintech and healthtech. Happy to review pitch decks or product flows for anyone in the community.",
-    linkedin: "#",
-    instagram: "#",
-    phone: "+91 90000 00003",
-    email: "priya.nair@example.com",
-  },
-  {
-    name: "Karan Verma",
-    role: "Final Year, NIT Surat",
-    bio: "Mechanical engineering student building a low-cost water filtration system for rural communities as a climate-tech side project. Keen on manufacturing and hardware prototyping. Open to internships in core engineering roles.",
-    linkedin: "#",
-    instagram: "#",
-    phone: "+91 90000 00004",
-    email: "karan.verma@example.com",
-  },
-  {
-    name: "Sana Iqbal",
-    role: "Co-Founder, GreenCart",
-    bio: "Scaling a D2C sustainable grocery brand across three cities with a focus on zero-plastic packaging. Previously worked in supply chain at a large FMCG company before going the founder route. Happy to talk logistics, D2C growth, or early fundraising.",
-    linkedin: "#",
-    instagram: "#",
-    phone: "+91 90000 00005",
-    email: "sana.iqbal@example.com",
-  },
-  {
-    name: "Arjun Desai",
-    role: "MBA Candidate, ISB Hyderabad",
-    bio: "Ex-management consultant transitioning into venture investing after four years advising consumer and retail clients. Decided he’d rather work directly with founders than advise from the sidelines. Interested in connecting with early-stage teams raising their first round.",
-    linkedin: "#",
-    instagram: "#",
-    phone: "+91 90000 00006",
-    email: "arjun.desai@example.com",
-  },
-];
+const MemberSkeleton = () => (
+  <div className="bg-[#FFFFFF]/5 border border-[#FFFFFF]/10 rounded-2xl p-6 md:p-8 animate-pulse">
+    <div className="flex items-start gap-4 mb-4">
+      <div className="w-12 h-12 rounded-full bg-white/10" />
+      <div className="space-y-2 flex-1">
+        <div className="h-4 bg-white/10 rounded w-1/3" />
+        <div className="h-3 bg-white/10 rounded w-1/4" />
+      </div>
+    </div>
+    <div className="space-y-2 mb-6">
+      <div className="h-3 bg-white/10 rounded w-full" />
+      <div className="h-3 bg-white/10 rounded w-5/6" />
+      <div className="h-3 bg-white/10 rounded w-4/6" />
+    </div>
+    <div className="flex gap-3">
+      <div className="w-8 h-8 rounded bg-white/10" />
+      <div className="w-8 h-8 rounded bg-white/10" />
+    </div>
+  </div>
+);
 
 export default function CommunityPage() {
-  // NOTE: fully mocked — any email/password "succeeds" after a simulated delay.
-  // No backend call, no real auth, no persistence. Real member accounts and
-  // real directory data land once the backend/database side is connected.
   const [credentials, setCredentials] = useState({ email: "", password: "" });
-  const [status, setStatus] = useState<"login" | "processing" | "directory">(
-    "login",
+  const [status, setStatus] = useState<"login" | "processing" | "directory" | "checking_session">(
+    "checking_session",
   );
 
-  const { data: membersResponse, isLoading } = useQuery({
+  useEffect(() => {
+    communityAPI.getMe()
+      .then(() => setStatus("directory"))
+      .catch(() => setStatus("login"));
+  }, []);
+
+  const { data: membersResponse, isLoading, isError } = useQuery({
     queryKey: ["communityMembers"],
     queryFn: () => communityAPI.getMembers().then((res) => res.data),
     enabled: status === "directory",
   });
 
-  const members = membersResponse?.data?.members || PLACEHOLDER_MEMBERS;
+  const members = membersResponse?.data?.members || [];
   const membersCount =
-    membersResponse?.data?.pagination?.total || PLACEHOLDER_MEMBERS.length;
+    membersResponse?.data?.pagination?.total || 0;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,7 +114,11 @@ export default function CommunityPage() {
             </Link>
           </div>
 
-          {status !== "directory" ? (
+          {status === "checking_session" ? (
+            <div className="flex items-center justify-center min-h-[50vh]">
+              <div className="w-8 h-8 border-2 border-[#D4FF3F] border-t-transparent rounded-full animate-spin" />
+            </div>
+          ) : status !== "directory" ? (
             <motion.div
               key="login"
               initial={{ opacity: 0, y: 20 }}
@@ -278,9 +242,25 @@ export default function CommunityPage() {
                 data-testid="community-member-grid"
                 className="grid grid-cols-1 gap-6"
               >
-                {members.map((member: CommunityMember) => (
-                  <CommunityMemberCard key={member.email} member={member} />
-                ))}
+                {isLoading ? (
+                  <>
+                    <MemberSkeleton />
+                    <MemberSkeleton />
+                    <MemberSkeleton />
+                  </>
+                ) : isError ? (
+                  <div className="text-red-400 p-4 border border-red-400/20 rounded-xl bg-red-400/5">
+                    Failed to load community members. Please try again later.
+                  </div>
+                ) : members.length === 0 ? (
+                  <div className="text-[#A1A1A1] p-8 text-center border border-white/10 rounded-xl bg-white/5">
+                    No community members found.
+                  </div>
+                ) : (
+                  members.map((member: CommunityMember) => (
+                    <CommunityMemberCard key={member.email} member={member} />
+                  ))
+                )}
               </div>
             </motion.div>
           )}

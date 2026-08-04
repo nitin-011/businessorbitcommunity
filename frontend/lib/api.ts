@@ -6,6 +6,7 @@ export const api = axios.create({
   baseURL: `${API_URL}/api`,
   headers: {
     "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "69420",
   },
   withCredentials: true,
 });
@@ -64,6 +65,7 @@ export const adminAPI = {
 // Community APIs
 export const communityAPI = {
   getMembers: (params?: any) => api.get("/community/members", { params }),
+  getMe: () => api.get("/community/me"),
   login: (data: any) => api.post("/community/login", data),
   updateProfile: (data: any) => api.put("/community/profile", data),
   uploadPhoto: (data: FormData) =>

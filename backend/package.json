@@ -24,7 +24,8 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.23.0",
     "multer": "^2.2.0",
-    "multer-storage-cloudinary": "^4.0.0"
+    "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^9.0.4"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
@@ -37,6 +38,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^20.19.37",
+    "@types/nodemailer": "^8.0.1",
     "@types/supertest": "^7.2.1",
     "install": "^0.13.0",
     "jest": "^30.4.2",

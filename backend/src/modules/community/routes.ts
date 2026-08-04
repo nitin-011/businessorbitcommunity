@@ -2,7 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
-import { getMembers, login, updateProfile, uploadPhoto } from "./controller";
+import { getMembers, login, updateProfile, uploadPhoto, getMe } from "./controller";
 import { checkoutCard, paymentRedirect } from "./card.controller";
 import {
   requireCommunityAuth,
@@ -21,7 +21,8 @@ const storage = new CloudinaryStorage({
 });
 const parser = multer({ storage });
 
-router.get("/members", getMembers);
+router.get("/members", requireCommunityAuth as any, getMembers as any);
+router.get("/me", requireCommunityAuth as any, getMe as any);
 router.post("/login", login);
 router.put("/profile", requireCommunityAuth as any, updateProfile as any);
 router.post(
