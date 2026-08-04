@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useRef, useMemo, useEffect } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import { useRef, useMemo, useEffect } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 
 function HollowSphereParticles() {
   const pointsRef = useRef<THREE.Points>(null);
@@ -15,8 +15,8 @@ function HollowSphereParticles() {
       mouse.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouse.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
     };
-    window.addEventListener('mousemove', onMouseMove);
-    return () => window.removeEventListener('mousemove', onMouseMove);
+    window.addEventListener("mousemove", onMouseMove);
+    return () => window.removeEventListener("mousemove", onMouseMove);
   }, []);
 
   const { positions, originalPositions } = useMemo(() => {
@@ -38,17 +38,18 @@ function HollowSphereParticles() {
 
   useFrame((state, delta) => {
     if (!pointsRef.current) return;
-    
+
     // Smooth, slow continuous floating rotation
     pointsRef.current.rotation.y += delta * 0.05;
     pointsRef.current.rotation.x += delta * 0.02;
 
-    const positionsArray = pointsRef.current.geometry.attributes.position.array as Float32Array;
+    const positionsArray = pointsRef.current.geometry.attributes.position
+      .array as Float32Array;
 
     mouseVec.set(
       (mouse.current.x * state.viewport.width) / 2,
       (mouse.current.y * state.viewport.height) / 2,
-      1.5 // Protrudes a bit to interact mainly with front-facing particles
+      1.5, // Protrudes a bit to interact mainly with front-facing particles
     );
 
     // Transform mouse vector to local space
@@ -56,34 +57,43 @@ function HollowSphereParticles() {
     mouseVec.applyQuaternion(invQuat);
 
     for (let i = 0; i < count; i++) {
-        const i3 = i * 3;
-        vec.set(originalPositions[i3], originalPositions[i3 + 1], originalPositions[i3 + 2]);
-        
-        const dist = vec.distanceTo(mouseVec);
-        const interactionRadius = 2.0;
-  
-        if (dist < interactionRadius) {
-          // Repel effect
-          const dir = vec.clone().sub(mouseVec).normalize();
-          const force = (interactionRadius - dist) * 0.5;
-          target.copy(vec).add(dir.multiplyScalar(force));
-        } else {
-          target.copy(vec);
-        }
-  
-        // Fluid return LERP
-        positionsArray[i3] += (target.x - positionsArray[i3]) * 0.08;
-        positionsArray[i3 + 1] += (target.y - positionsArray[i3 + 1]) * 0.08;
-        positionsArray[i3 + 2] += (target.z - positionsArray[i3 + 2]) * 0.08;
+      const i3 = i * 3;
+      vec.set(
+        originalPositions[i3],
+        originalPositions[i3 + 1],
+        originalPositions[i3 + 2],
+      );
+
+      const dist = vec.distanceTo(mouseVec);
+      const interactionRadius = 2.0;
+
+      if (dist < interactionRadius) {
+        // Repel effect
+        const dir = vec.clone().sub(mouseVec).normalize();
+        const force = (interactionRadius - dist) * 0.5;
+        target.copy(vec).add(dir.multiplyScalar(force));
+      } else {
+        target.copy(vec);
       }
-  
-      pointsRef.current.geometry.attributes.position.needsUpdate = true;
+
+      // Fluid return LERP
+      positionsArray[i3] += (target.x - positionsArray[i3]) * 0.08;
+      positionsArray[i3 + 1] += (target.y - positionsArray[i3 + 1]) * 0.08;
+      positionsArray[i3 + 2] += (target.z - positionsArray[i3 + 2]) * 0.08;
+    }
+
+    pointsRef.current.geometry.attributes.position.needsUpdate = true;
   });
 
   return (
     <points ref={pointsRef}>
       <bufferGeometry>
-        <bufferAttribute attach="attributes-position" count={count} array={positions} itemSize={3} />
+        <bufferAttribute
+          attach="attributes-position"
+          count={count}
+          array={positions}
+          itemSize={3}
+        />
       </bufferGeometry>
       <pointsMaterial
         size={0.035}
@@ -100,7 +110,11 @@ function HollowSphereParticles() {
 
 export default function InteractiveSphere() {
   return (
-    <Canvas camera={{ position: [0, 0, 8], fov: 45 }} dpr={[1, 2]} gl={{ antialias: false, alpha: true }}>
+    <Canvas
+      camera={{ position: [0, 0, 8], fov: 45 }}
+      dpr={[1, 2]}
+      gl={{ antialias: false, alpha: true }}
+    >
       <ambientLight intensity={0.5} />
       <HollowSphereParticles />
     </Canvas>

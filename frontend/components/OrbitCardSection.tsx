@@ -1,19 +1,23 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
-import { Bebas_Neue } from 'next/font/google';
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+import { Bebas_Neue } from "next/font/google";
 
-const bebas = Bebas_Neue({ subsets: ['latin'], weight: '400' });
+const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400" });
 
 export default function OrbitCardSection() {
   return (
     <>
-      <style dangerouslySetInnerHTML={{__html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @import url('https://fonts.cdnfonts.com/css/glacial-indifference-2');
         .font-glacial { font-family: 'Glacial Indifference', sans-serif; }
-      `}} />
+      `,
+        }}
+      />
       <section
         data-testid="orbit-card-section"
         className="relative py-16 md:py-20 bg-gradient-to-b from-[#0A0A0A] to-[#121212] overflow-hidden"
@@ -21,7 +25,9 @@ export default function OrbitCardSection() {
         {/* Subtle Noise Texture Overlay */}
         <div
           className="pointer-events-none absolute inset-0 z-0 opacity-[0.03]"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
         />
 
         <div className="relative z-10 max-w-2xl mx-auto px-6 text-center">
@@ -53,9 +59,9 @@ export default function OrbitCardSection() {
             className="font-glacial text-[15px] md:text-[16px] text-[#A1A1A1] leading-[1.6] mb-[32px] max-w-lg mx-auto"
           >
             A physical NFC card and a lifetime Business Orbit membership in one.
-            Partner credits, invite-only events, the founder directory, and hands-on
-            help turning your idea into a real business — all unlocked with a single
-            tap.
+            Partner credits, invite-only events, the founder directory, and
+            hands-on help turning your idea into a real business — all unlocked
+            with a single tap.
           </motion.p>
 
           <motion.div

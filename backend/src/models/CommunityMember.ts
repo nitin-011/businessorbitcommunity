@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface ICommunityMember extends Document {
   name: string;
@@ -10,7 +10,7 @@ export interface ICommunityMember extends Document {
   email: string;
   password?: string;
   photoUrl?: string;
-  status: 'active' | 'inactive';
+  status: "active" | "inactive";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -28,11 +28,14 @@ const CommunityMemberSchema = new Schema<ICommunityMember>(
     photoUrl: { type: String },
     status: {
       type: String,
-      enum: ['active', 'inactive'],
-      default: 'active',
+      enum: ["active", "inactive"],
+      default: "active",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const CommunityMember = mongoose.model<ICommunityMember>('CommunityMember', CommunityMemberSchema);
+export const CommunityMember = mongoose.model<ICommunityMember>(
+  "CommunityMember",
+  CommunityMemberSchema,
+);

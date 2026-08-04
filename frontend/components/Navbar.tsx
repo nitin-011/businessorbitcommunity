@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
-import { Bebas_Neue } from 'next/font/google';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
+import { Bebas_Neue } from "next/font/google";
 
 const bebas = Bebas_Neue({
-  subsets: ['latin'],
-  weight: '400',
+  subsets: ["latin"],
+  weight: "400",
 });
 
-import logoImg from '../assets/logo.png';
+import logoImg from "../assets/logo.png";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -22,10 +22,10 @@ export default function Navbar() {
       setScrolled(window.scrollY > 50);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -46,8 +46,8 @@ export default function Navbar() {
         data-testid="navbar"
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'backdrop-blur-xl bg-black/70 border-b border-white/5'
-            : 'bg-transparent'
+            ? "backdrop-blur-xl bg-black/70 border-b border-white/5"
+            : "bg-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12">

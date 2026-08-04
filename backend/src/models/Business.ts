@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IBusiness extends Document {
   name: string;
@@ -6,7 +6,7 @@ export interface IBusiness extends Document {
   role: string;
   stage: string;
   email: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -20,11 +20,11 @@ const BusinessSchema = new Schema<IBusiness>(
     email: { type: String, required: true, unique: true, lowercase: true },
     status: {
       type: String,
-      enum: ['pending', 'approved', 'rejected'],
-      default: 'pending',
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Business = mongoose.model<IBusiness>('Business', BusinessSchema);
+export const Business = mongoose.model<IBusiness>("Business", BusinessSchema);

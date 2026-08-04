@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Linkedin, Instagram, Phone, Mail } from 'lucide-react';
+import { useState } from "react";
+import { Linkedin, Instagram, Phone, Mail } from "lucide-react";
 
 // BACKEND HANDOFF — expected shape for a community member record, once the
 // directory is wired to the real API/database:
@@ -25,12 +25,16 @@ export interface CommunityMember {
 
 function getInitials(name: string) {
   const parts = name.trim().split(/\s+/);
-  const first = parts[0]?.[0] ?? '';
-  const last = parts.length > 1 ? parts[parts.length - 1][0] : '';
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? parts[parts.length - 1][0] : "";
   return (first + last).toUpperCase();
 }
 
-export default function CommunityMemberCard({ member }: { member: CommunityMember }) {
+export default function CommunityMemberCard({
+  member,
+}: {
+  member: CommunityMember;
+}) {
   // Plain <img> (not next/image) deliberately — the real photo domain isn't
   // known yet (backend/CDN not wired up), and next/image requires
   // allowlisting remote domains in next.config.js ahead of time. Swap to
@@ -47,7 +51,9 @@ export default function CommunityMemberCard({ member }: { member: CommunityMembe
       <div className="relative w-full h-64 sm:h-auto sm:w-[340px] shrink-0 self-stretch bg-gradient-to-br from-white/[0.05] to-transparent flex items-center justify-center overflow-hidden sm:border-r border-b sm:border-b-0 border-white/10">
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.05]"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
         />
         <div className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 bg-[#D4FF3F]/20 blur-3xl rounded-full" />
         <span className="relative font-glacial font-bold text-[56px] text-[#D4FF3F] tracking-wide">
@@ -66,11 +72,17 @@ export default function CommunityMemberCard({ member }: { member: CommunityMembe
       {/* Content */}
       <div className="flex-1 p-7 sm:p-9 flex flex-col">
         <div className="mb-3">
-          <h3 className="font-glacial font-bold text-[24px] text-[#F5F5F5] leading-tight">{member.name}</h3>
-          <p className="font-glacial text-[15px] text-[#A1A1A1]">{member.role}</p>
+          <h3 className="font-glacial font-bold text-[24px] text-[#F5F5F5] leading-tight">
+            {member.name}
+          </h3>
+          <p className="font-glacial text-[15px] text-[#A1A1A1]">
+            {member.role}
+          </p>
         </div>
 
-        <p className="font-glacial text-[16px] text-[#C4C4C4] leading-[1.7] mb-6 max-w-2xl">{member.bio}</p>
+        <p className="font-glacial text-[16px] text-[#C4C4C4] leading-[1.7] mb-6 max-w-2xl">
+          {member.bio}
+        </p>
 
         <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-white/10">
           <div className="flex items-center gap-2">

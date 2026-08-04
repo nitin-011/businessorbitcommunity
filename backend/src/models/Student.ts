@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface IStudent extends Document {
   name: string;
@@ -9,7 +9,7 @@ export interface IStudent extends Document {
   otpExpiry?: Date;
   isEmailVerified: boolean;
   idCardLink?: string;
-  status: 'pending' | 'approved' | 'rejected';
+  status: "pending" | "approved" | "rejected";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,11 +26,11 @@ const StudentSchema = new Schema<IStudent>(
     idCardLink: { type: String },
     status: {
       type: String,
-      enum: ['pending', 'approved', 'rejected'],
-      default: 'pending',
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const Student = mongoose.model<IStudent>('Student', StudentSchema);
+export const Student = mongoose.model<IStudent>("Student", StudentSchema);

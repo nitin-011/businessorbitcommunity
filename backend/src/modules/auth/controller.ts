@@ -1,18 +1,18 @@
-import { Request, Response } from 'express';
-import { Admin } from '../../models/Admin';
-import { LoginAttempt } from '../../models/LoginAttempt';
-import { hashPassword, verifyPassword } from '../../utils/password';
-import { generateAccessToken, generateRefreshToken } from '../../utils/jwt';
-import { config } from '../../config/env';
-import fs from 'fs';
-import path from 'path';
+import { Request, Response } from "express";
+import { Admin } from "../../models/Admin";
+import { LoginAttempt } from "../../models/LoginAttempt";
+import { hashPassword, verifyPassword } from "../../utils/password";
+import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
+import { config } from "../../config/env";
+import fs from "fs";
+import path from "path";
 
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      res.status(400).json({ message: 'Email and password are required' });
+      res.status(400).json({ message: "Email and password are required" });
       return;
     }
 
@@ -22,7 +22,9 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Check brute force protection
     const loginAttempt = await LoginAttempt.findOne({ identifier });
     if (loginAttempt?.lockedUntil && new Date() < loginAttempt.lockedUntil) {
-      res.status(429).json({ message: 'Too many failed attempts. Try again later.' });
+      res
+        .status(429)
+        .json({ message: "Too many failed attempts. Try again later." });
       return;
     }
 
@@ -30,14 +32,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     if (!admin) {
       // Increment failed attempts
       await incrementFailedAttempts(identifier);
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: "Invalid credentials" });
       return;
     }
 
     const isValidPassword = await verifyPassword(password, admin.password);
     if (!isValidPassword) {
       await incrementFailedAttempts(identifier);
-      res.status(401).json({ message: 'Invalid credentials' });
+      res.status(401).json({ message: "Invalid credentials" });
       return;
     }
 
@@ -56,23 +58,23 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       role: admin.role,
     });
 
-    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-    res.cookie('access_token', accessToken, {
+    const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
+    res.cookie("access_token", accessToken, {
       httpOnly: true,
       secure: isSecure,
-      sameSite: isSecure ? 'none' : 'lax',
+      sameSite: isSecure ? "none" : "lax",
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
-    res.cookie('refresh_token', refreshToken, {
+    res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: isSecure,
-      sameSite: isSecure ? 'none' : 'lax',
+      sameSite: isSecure ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.json({
-      message: 'Login successful',
+      message: "Login successful",
       admin: {
         id: admin._id.toString(),
         name: admin.name,
@@ -81,14 +83,14 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       },
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Internal server error' });
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 const incrementFailedAttempts = async (identifier: string): Promise<void> => {
   const attempt = await LoginAttempt.findOne({ identifier });
-  
+
   if (!attempt) {
     await LoginAttempt.create({
       identifier,
@@ -111,9 +113,9 @@ const incrementFailedAttempts = async (identifier: string): Promise<void> => {
 };
 
 export const logout = async (req: Request, res: Response): Promise<void> => {
-  res.clearCookie('access_token');
-  res.clearCookie('refresh_token');
-  res.json({ message: 'Logout successful' });
+  res.clearCookie("access_token");
+  res.clearCookie("refresh_token");
+  res.json({ message: "Logout successful" });
 };
 
 export const seedAdmin = async (): Promise<void> => {
@@ -126,24 +128,27 @@ export const seedAdmin = async (): Promise<void> => {
     if (!existingAdmin) {
       const hashedPassword = await hashPassword(adminPassword);
       await Admin.create({
-        name: 'Admin',
+        name: "Admin",
         email: adminEmail,
         password: hashedPassword,
-        role: 'admin',
+        role: "admin",
       });
-      console.log('✅ Admin user seeded successfully');
+      console.log("✅ Admin user seeded successfully");
     } else {
-      const isPasswordValid = await verifyPassword(adminPassword, existingAdmin.password);
+      const isPasswordValid = await verifyPassword(
+        adminPassword,
+        existingAdmin.password,
+      );
       if (!isPasswordValid) {
         const hashedPassword = await hashPassword(adminPassword);
         existingAdmin.password = hashedPassword;
         await existingAdmin.save();
-        console.log('✅ Admin password updated');
+        console.log("✅ Admin password updated");
       }
     }
 
     // Write credentials to a local memory directory (removed hardcoded /app/memory)
-    const credentialsPath = path.join(__dirname, '../../../../memory');
+    const credentialsPath = path.join(__dirname, "../../../../memory");
     if (!fs.existsSync(credentialsPath)) {
       fs.mkdirSync(credentialsPath, { recursive: true });
     }
@@ -177,8 +182,11 @@ export const seedAdmin = async (): Promise<void> => {
 - POST /api/admin/bulk-email
 `;
 
-    fs.writeFileSync(path.join(credentialsPath, 'test_credentials.md'), credentialsContent);
+    fs.writeFileSync(
+      path.join(credentialsPath, "test_credentials.md"),
+      credentialsContent,
+    );
   } catch (error) {
-    console.error('❌ Error seeding admin:', error);
+    console.error("❌ Error seeding admin:", error);
   }
 };

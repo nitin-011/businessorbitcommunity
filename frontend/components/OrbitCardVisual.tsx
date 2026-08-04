@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { Nfc, RotateCw } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from "react";
+import { Nfc, RotateCw } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Renders `text` as individually animated characters — each letter springs in as
 // it's typed and springs out as it's deleted. Neighboring letters reposition via
@@ -26,7 +26,9 @@ function AnimatedCardText({
   const isEmpty = text.trim().length === 0;
 
   return (
-    <span className={`inline-flex flex-nowrap min-w-0 overflow-hidden ${className}`}>
+    <span
+      className={`inline-flex flex-nowrap min-w-0 overflow-hidden ${className}`}
+    >
       <AnimatePresence initial={false}>
         {isEmpty ? (
           <motion.span
@@ -34,22 +36,22 @@ function AnimatedCardText({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.35, ease: 'easeOut' }}
-            style={{ whiteSpace: 'nowrap' }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            style={{ whiteSpace: "nowrap" }}
           >
             {placeholder}
           </motion.span>
         ) : (
-          text.split('').map((char, i) => (
+          text.split("").map((char, i) => (
             <motion.span
               key={i}
               initial={{ opacity: 0, y: 10, scale: 0.7 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.7 }}
-              transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-              style={{ display: 'inline-block', whiteSpace: 'pre' }}
+              transition={{ type: "spring", stiffness: 450, damping: 30 }}
+              style={{ display: "inline-block", whiteSpace: "pre" }}
             >
-              {char === ' ' ? ' ' : char}
+              {char === " " ? " " : char}
             </motion.span>
           ))
         )}
@@ -75,7 +77,7 @@ function CardFace({
   compact,
   children,
 }: {
-  side: 'front' | 'back';
+  side: "front" | "back";
   compact: boolean;
   children: React.ReactNode;
 }) {
@@ -83,38 +85,44 @@ function CardFace({
     <div
       className="absolute inset-0 rounded-2xl overflow-hidden border border-[#D4FF3F]/40 bg-gradient-to-br from-[#151515] to-[#0A0A0A] shadow-[0_0_40px_rgba(212,255,63,0.12)]"
       style={{
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-        transform: side === 'back' ? 'rotateY(180deg)' : undefined,
+        backfaceVisibility: "hidden",
+        WebkitBackfaceVisibility: "hidden",
+        transform: side === "back" ? "rotateY(180deg)" : undefined,
       }}
     >
       {/* Noise Texture Overlay */}
       <div
         className="pointer-events-none absolute inset-0 z-0 opacity-[0.04]"
-        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+        }}
       />
       {/* Corner Glow */}
       <div className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 bg-[#D4FF3F]/20 blur-3xl rounded-full" />
 
-      <div className={`relative z-10 h-full flex flex-col justify-between ${compact ? 'p-4' : 'p-6'}`}>{children}</div>
+      <div
+        className={`relative z-10 h-full flex flex-col justify-between ${compact ? "p-4" : "p-6"}`}
+      >
+        {children}
+      </div>
     </div>
   );
 }
 
 export default function OrbitCardVisual({
   compact = false,
-  name = '',
-  designation = '',
+  name = "",
+  designation = "",
   interactive = false,
-  defaultSide = 'front',
+  defaultSide = "front",
 }: {
   compact?: boolean;
   name?: string;
   designation?: string;
   interactive?: boolean;
-  defaultSide?: 'front' | 'back';
+  defaultSide?: "front" | "back";
 }) {
-  const [flipped, setFlipped] = useState(defaultSide === 'back');
+  const [flipped, setFlipped] = useState(defaultSide === "back");
 
   return (
     <div className="w-full">
@@ -122,22 +130,24 @@ export default function OrbitCardVisual({
         data-testid="orbit-card-visual"
         onClick={interactive ? () => setFlipped((f) => !f) : undefined}
         className={`relative mx-auto ${
-          compact ? 'w-full max-w-[280px] aspect-[380/240]' : 'w-full max-w-[380px] aspect-[380/240]'
-        } ${interactive ? 'cursor-pointer' : ''}`}
-        style={{ perspective: '1200px' }}
+          compact
+            ? "w-full max-w-[280px] aspect-[380/240]"
+            : "w-full max-w-[380px] aspect-[380/240]"
+        } ${interactive ? "cursor-pointer" : ""}`}
+        style={{ perspective: "1200px" }}
       >
         <motion.div
           className="relative w-full h-full"
-          style={{ transformStyle: 'preserve-3d' }}
+          style={{ transformStyle: "preserve-3d" }}
           animate={{ rotateY: flipped ? 180 : 0 }}
-          transition={{ duration: 0.6, ease: 'easeInOut' }}
+          transition={{ duration: 0.6, ease: "easeInOut" }}
         >
           {/* FRONT — "Orbit Card" wordmark, nothing else */}
           <CardFace side="front" compact={compact}>
             <div className="h-full flex items-center justify-center">
               <span
                 className={`font-glacial uppercase tracking-[0.25em] text-[#F5F5F5] ${
-                  compact ? 'text-[18px]' : 'text-[24px] md:text-[28px]'
+                  compact ? "text-[18px]" : "text-[24px] md:text-[28px]"
                 }`}
               >
                 Orbit Card
@@ -148,7 +158,11 @@ export default function OrbitCardVisual({
           {/* BACK — member details + NFC indicator */}
           <CardFace side="back" compact={compact}>
             <div className="flex items-center gap-1.5">
-              <Nfc className={compact ? 'w-3 h-3 text-[#D4FF3F]' : 'w-4 h-4 text-[#D4FF3F]'} />
+              <Nfc
+                className={
+                  compact ? "w-3 h-3 text-[#D4FF3F]" : "w-4 h-4 text-[#D4FF3F]"
+                }
+              />
               <span className="font-glacial text-[10px] uppercase tracking-[0.2em] text-[#D4FF3F]">
                 Tap to Connect
               </span>
@@ -159,16 +173,18 @@ export default function OrbitCardVisual({
                 text={name}
                 placeholder="Your Name Here"
                 className={`font-glacial uppercase tracking-wide text-[#F5F5F5] mb-1 ${
-                  compact ? 'text-[13px]' : 'text-[16px]'
+                  compact ? "text-[13px]" : "text-[16px]"
                 }`}
               />
               <div className="flex items-end justify-between gap-3">
                 <AnimatedCardText
                   text={designation}
                   placeholder="Your Designation Here"
-                  className={`font-glacial text-[#A1A1A1] ${compact ? 'text-[10px]' : 'text-[12px]'}`}
+                  className={`font-glacial text-[#A1A1A1] ${compact ? "text-[10px]" : "text-[12px]"}`}
                 />
-                <span className="font-mono text-[10px] text-[#A1A1A1] shrink-0">LIFETIME MEMBER</span>
+                <span className="font-mono text-[10px] text-[#A1A1A1] shrink-0">
+                  LIFETIME MEMBER
+                </span>
               </div>
             </div>
           </CardFace>

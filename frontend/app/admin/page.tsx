@@ -1,53 +1,55 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useAdminAuth } from './AuthContext';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { adminAPI } from '@/lib/api';
-import { LogOut, Users, CheckCircle, XCircle } from 'lucide-react';
+import { useState } from "react";
+import { useAdminAuth } from "./AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { adminAPI } from "@/lib/api";
+import { LogOut, Users, CheckCircle, XCircle } from "lucide-react";
 
 export default function AdminPage() {
   const { admin, login, logout } = useAdminAuth();
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-  const [loginError, setLoginError] = useState('');
-  const [activeTab, setActiveTab] = useState<'students' | 'business'>('students');
+  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [loginError, setLoginError] = useState("");
+  const [activeTab, setActiveTab] = useState<"students" | "business">(
+    "students",
+  );
   const queryClient = useQueryClient();
 
   const { data: stats } = useQuery({
-    queryKey: ['admin-stats'],
+    queryKey: ["admin-stats"],
     queryFn: () => adminAPI.getStats(),
     enabled: !!admin,
   });
 
   const { data: studentsData } = useQuery({
-    queryKey: ['admin-students'],
+    queryKey: ["admin-students"],
     queryFn: () => adminAPI.getStudents(),
-    enabled: !!admin && activeTab === 'students',
+    enabled: !!admin && activeTab === "students",
   });
 
   const { data: businessData } = useQuery({
-    queryKey: ['admin-business'],
+    queryKey: ["admin-business"],
     queryFn: () => adminAPI.getBusiness(),
-    enabled: !!admin && activeTab === 'business',
+    enabled: !!admin && activeTab === "business",
   });
 
   const approveMutation = useMutation({
-    mutationFn: ({ type, id }: { type: 'student' | 'business'; id: string }) =>
+    mutationFn: ({ type, id }: { type: "student" | "business"; id: string }) =>
       adminAPI.approve(type, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-students'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-business'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-students"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-business"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: ({ type, id }: { type: 'student' | 'business'; id: string }) =>
+    mutationFn: ({ type, id }: { type: "student" | "business"; id: string }) =>
       adminAPI.reject(type, id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-students'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-business'] });
-      queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-students"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-business"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
     },
   });
 
@@ -55,9 +57,9 @@ export default function AdminPage() {
     e.preventDefault();
     try {
       await login(loginForm.email, loginForm.password);
-      setLoginError('');
+      setLoginError("");
     } catch (error: any) {
-      setLoginError(error.response?.data?.message || 'Login failed');
+      setLoginError(error.response?.data?.message || "Login failed");
     }
   };
 
@@ -80,18 +82,24 @@ export default function AdminPage() {
                 type="email"
                 data-testid="admin-email-input"
                 value={loginForm.email}
-                onChange={(e) => setLoginForm({ ...loginForm, email: e.target.value })}
+                onChange={(e) =>
+                  setLoginForm({ ...loginForm, email: e.target.value })
+                }
                 className="w-full px-4 py-3 bg-dark-bg border border-border-dark rounded-lg text-white focus:border-white/30 focus:outline-none"
                 required
               />
             </div>
             <div className="mb-6">
-              <label className="block text-white/80 mb-2 text-sm">Password</label>
+              <label className="block text-white/80 mb-2 text-sm">
+                Password
+              </label>
               <input
                 type="password"
                 data-testid="admin-password-input"
                 value={loginForm.password}
-                onChange={(e) => setLoginForm({ ...loginForm, password: e.target.value })}
+                onChange={(e) =>
+                  setLoginForm({ ...loginForm, password: e.target.value })
+                }
                 className="w-full px-4 py-3 bg-dark-bg border border-border-dark rounded-lg text-white focus:border-white/30 focus:outline-none"
                 required
               />
@@ -112,21 +120,27 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-light-bg flex">
       <div className="w-64 bg-[#0A0A0A] border-r border-border-dark min-h-screen p-6">
-        <h2 className="text-2xl font-heading font-bold text-white mb-8">Business Orbit</h2>
+        <h2 className="text-2xl font-heading font-bold text-white mb-8">
+          Business Orbit
+        </h2>
         <div className="space-y-2">
           <button
-            onClick={() => setActiveTab('students')}
+            onClick={() => setActiveTab("students")}
             className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-              activeTab === 'students' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'
+              activeTab === "students"
+                ? "bg-white/10 text-white"
+                : "text-white/60 hover:text-white"
             }`}
           >
             <Users size={20} className="inline mr-3" />
             Students
           </button>
           <button
-            onClick={() => setActiveTab('business')}
+            onClick={() => setActiveTab("business")}
             className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-              activeTab === 'business' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'
+              activeTab === "business"
+                ? "bg-white/10 text-white"
+                : "text-white/60 hover:text-white"
             }`}
           >
             <Users size={20} className="inline mr-3" />
@@ -144,7 +158,9 @@ export default function AdminPage() {
 
       <div className="flex-1 p-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-heading font-bold text-black mb-6">Dashboard</h1>
+          <h1 className="text-3xl font-heading font-bold text-black mb-6">
+            Dashboard
+          </h1>
           <div className="grid grid-cols-4 gap-4">
             <div className="p-6 bg-white border border-border-light rounded-lg">
               <div className="text-3xl font-heading font-bold text-black mb-2">
@@ -176,37 +192,49 @@ export default function AdminPage() {
         <div className="bg-white border border-border-light rounded-lg overflow-hidden">
           <div className="p-6 border-b border-border-light">
             <h2 className="text-2xl font-heading font-bold text-black">
-              {activeTab === 'students' ? 'Students' : 'Business Applications'}
+              {activeTab === "students" ? "Students" : "Business Applications"}
             </h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-light-bg">
                 <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">Name</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">Email</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-black">
-                    {activeTab === 'students' ? 'College' : 'Company'}
+                    Name
                   </th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">Status</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">Actions</th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">
+                    Email
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">
+                    {activeTab === "students" ? "College" : "Company"}
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">
+                    Status
+                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-light">
-                {activeTab === 'students' &&
+                {activeTab === "students" &&
                   studentsData?.data?.students?.map((student: any) => (
                     <tr key={student.id}>
                       <td className="px-6 py-4 text-black">{student.name}</td>
-                      <td className="px-6 py-4 text-black/70 text-sm">{student.email}</td>
-                      <td className="px-6 py-4 text-black/70 text-sm">{student.college}</td>
+                      <td className="px-6 py-4 text-black/70 text-sm">
+                        {student.email}
+                      </td>
+                      <td className="px-6 py-4 text-black/70 text-sm">
+                        {student.college}
+                      </td>
                       <td className="px-6 py-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            student.status === 'approved'
-                              ? 'bg-green-100 text-green-800'
-                              : student.status === 'rejected'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                            student.status === "approved"
+                              ? "bg-green-100 text-green-800"
+                              : student.status === "rejected"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {student.status}
@@ -215,16 +243,26 @@ export default function AdminPage() {
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           <button
-                            onClick={() => approveMutation.mutate({ type: 'student', id: student.id })}
+                            onClick={() =>
+                              approveMutation.mutate({
+                                type: "student",
+                                id: student.id,
+                              })
+                            }
                             className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
-                            disabled={student.status === 'approved'}
+                            disabled={student.status === "approved"}
                           >
                             <CheckCircle size={20} />
                           </button>
                           <button
-                            onClick={() => rejectMutation.mutate({ type: 'student', id: student.id })}
+                            onClick={() =>
+                              rejectMutation.mutate({
+                                type: "student",
+                                id: student.id,
+                              })
+                            }
                             className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                            disabled={student.status === 'rejected'}
+                            disabled={student.status === "rejected"}
                           >
                             <XCircle size={20} />
                           </button>
@@ -232,20 +270,24 @@ export default function AdminPage() {
                       </td>
                     </tr>
                   ))}
-                {activeTab === 'business' &&
+                {activeTab === "business" &&
                   businessData?.data?.businesses?.map((business: any) => (
                     <tr key={business.id}>
                       <td className="px-6 py-4 text-black">{business.name}</td>
-                      <td className="px-6 py-4 text-black/70 text-sm">{business.email}</td>
-                      <td className="px-6 py-4 text-black/70 text-sm">{business.company}</td>
+                      <td className="px-6 py-4 text-black/70 text-sm">
+                        {business.email}
+                      </td>
+                      <td className="px-6 py-4 text-black/70 text-sm">
+                        {business.company}
+                      </td>
                       <td className="px-6 py-4">
                         <span
                           className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            business.status === 'approved'
-                              ? 'bg-green-100 text-green-800'
-                              : business.status === 'rejected'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
+                            business.status === "approved"
+                              ? "bg-green-100 text-green-800"
+                              : business.status === "rejected"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {business.status}
@@ -254,16 +296,26 @@ export default function AdminPage() {
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           <button
-                            onClick={() => approveMutation.mutate({ type: 'business', id: business.id })}
+                            onClick={() =>
+                              approveMutation.mutate({
+                                type: "business",
+                                id: business.id,
+                              })
+                            }
                             className="p-2 text-green-600 hover:bg-red-50 rounded transition-colors"
-                            disabled={business.status === 'approved'}
+                            disabled={business.status === "approved"}
                           >
                             <CheckCircle size={20} />
                           </button>
                           <button
-                            onClick={() => rejectMutation.mutate({ type: 'business', id: business.id })}
+                            onClick={() =>
+                              rejectMutation.mutate({
+                                type: "business",
+                                id: business.id,
+                              })
+                            }
                             className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                            disabled={business.status === 'rejected'}
+                            disabled={business.status === "rejected"}
                           >
                             <XCircle size={20} />
                           </button>
