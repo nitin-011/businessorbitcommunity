@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Bebas_Neue } from 'next/font/google';
 import { ArrowLeft, Lock, LogOut } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { communityAPI } from '@/lib/api';
 import InteractiveSphere from '@/components/InteractiveSphere';
 import CommunityMemberCard, { CommunityMember } from '@/components/CommunityMemberCard';
 
@@ -84,12 +86,25 @@ export default function CommunityPage() {
   const [credentials, setCredentials] = useState({ email: '', password: '' });
   const [status, setStatus] = useState<'login' | 'processing' | 'directory'>('login');
 
-  const handleLogin = (e: React.FormEvent) => {
+  const { data: membersResponse, isLoading } = useQuery({
+    queryKey: ['communityMembers'],
+    queryFn: () => communityAPI.getMembers().then(res => res.data),
+    enabled: status === 'directory'
+  });
+
+  const members = membersResponse?.data?.members || PLACEHOLDER_MEMBERS;
+  const membersCount = membersResponse?.data?.pagination?.total || PLACEHOLDER_MEMBERS.length;
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('processing');
-    setTimeout(() => {
+    try {
+      await communityAPI.login(credentials);
       setStatus('directory');
-    }, 1200);
+    } catch (err) {
+      alert('Login failed. Please check your credentials.');
+      setStatus('login');
+    }
   };
 
   const handleSignOut = () => {
@@ -207,7 +222,7 @@ export default function CommunityPage() {
                     <h1 className={`${bebas.className} text-[32px] md:text-[44px] text-[#F5F5F5] uppercase leading-[1.1] mb-2`}>
                       Community Members
                     </h1>
-                    <p className="text-[15px] text-[#A1A1A1]">{PLACEHOLDER_MEMBERS.length} members and counting.</p>
+                    <p className="text-[15px] text-[#A1A1A1]">{isLoading ? 'Loading...' : `${membersCount} members and counting.`}</p>
                   </div>
                   <button
                     onClick={handleSignOut}
@@ -223,7 +238,7 @@ export default function CommunityPage() {
                   data-testid="community-member-grid"
                   className="grid grid-cols-1 gap-6"
                 >
-                  {PLACEHOLDER_MEMBERS.map((member) => (
+                  {members.map((member: CommunityMember) => (
                     <CommunityMemberCard key={member.email} member={member} />
                   ))}
                 </div>

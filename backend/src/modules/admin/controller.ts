@@ -2,6 +2,11 @@ import { Request, Response } from 'express';
 import { Student } from '../../models/Student';
 import { Business } from '../../models/Business';
 import { sendBulkEmail, sendApprovalEmail } from '../../utils/email';
+import { CommunityMember } from '../../models/CommunityMember';
+import { OrbitCardOrder } from '../../models/OrbitCardOrder';
+import { Parser } from 'json2csv';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 export const getStats = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -146,6 +151,19 @@ export const approve = async (req: Request, res: Response): Promise<void> => {
       student.status = 'approved';
       await student.save();
 
+      // Create community member
+      const rawPassword = crypto.randomBytes(6).toString('hex');
+      const hashedPassword = await bcrypt.hash(rawPassword, 10);
+      await CommunityMember.create({
+        name: student.name,
+        email: student.email,
+        role: `${student.course} at ${student.college}`,
+        password: hashedPassword,
+        status: 'active'
+      });
+
+      // Send email (rawPassword should be included, for now handled by logging)
+      console.log(`Created student community member. Email: ${student.email}, Password: ${rawPassword}`);
       await sendApprovalEmail(student.email, student.name, 'student');
 
       res.json({ message: 'Student approved successfully' });
@@ -159,6 +177,18 @@ export const approve = async (req: Request, res: Response): Promise<void> => {
       business.status = 'approved';
       await business.save();
 
+      // Create community member
+      const rawPassword = crypto.randomBytes(6).toString('hex');
+      const hashedPassword = await bcrypt.hash(rawPassword, 10);
+      await CommunityMember.create({
+        name: business.name,
+        email: business.email,
+        role: `${business.role} at ${business.company}`,
+        password: hashedPassword,
+        status: 'active'
+      });
+
+      console.log(`Created business community member. Email: ${business.email}, Password: ${rawPassword}`);
       await sendApprovalEmail(business.email, business.name, 'business');
 
       res.json({ message: 'Business approved successfully' });
@@ -226,5 +256,50 @@ export const sendBulk = async (req: Request, res: Response): Promise<void> => {
   } catch (error) {
     console.error('Send bulk email error:', error);
     res.status(500).json({ message: 'Failed to send bulk email' });
+  }
+};
+
+export const getOrders = async (req: Request, res: Response) => {
+  try {
+    const orders = await OrbitCardOrder.find()
+      .populate('memberId', 'name email company')
+      .sort({ createdAt: -1 });
+    res.json({ success: true, data: orders });
+  } catch (error) {
+    console.error('Get orders error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const exportOrders = async (req: Request, res: Response) => {
+  try {
+    const orders = await OrbitCardOrder.find({ status: 'SUCCESS' })
+      .populate('memberId', 'name email company')
+      .lean();
+
+    const data = orders.map((order: any) => ({
+      orderId: order._id.toString(),
+      transactionId: order.transactionId,
+      date: order.createdAt,
+      memberName: order.memberId?.name || '',
+      memberEmail: order.memberId?.email || '',
+      memberCompany: order.memberId?.company || '',
+      shippingAddress: order.shippingAddress,
+      amount: order.amount / 100,
+    }));
+
+    if (data.length === 0) {
+      return res.status(404).json({ message: 'No successful orders found to export' });
+    }
+
+    const parser = new Parser();
+    const csv = parser.parse(data);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('orbit-card-orders.csv');
+    return res.send(csv);
+  } catch (error) {
+    console.error('Export orders error:', error);
+    res.status(500).json({ message: 'Internal server error' });
   }
 };

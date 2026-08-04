@@ -9,6 +9,7 @@ import authRoutes from './modules/auth/routes';
 import studentRoutes from './modules/student/routes';
 import businessRoutes from './modules/business/routes';
 import adminRoutes from './modules/admin/routes';
+import communityRoutes from './modules/community/routes';
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/business', businessRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/community', communityRoutes);
 
 // Health check
 app.get('/api/health', (req: Request, res: Response) => {

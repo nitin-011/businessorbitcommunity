@@ -43,4 +43,17 @@ export const adminAPI = {
     api.patch(`/admin/reject/${type}/${id}`),
   sendBulkEmail: (data: { recipients: string[]; subject: string; content: string }) =>
     api.post('/admin/bulk-email', data),
+  getOrders: () => api.get('/admin/orders'),
+  exportOrders: () => api.get('/admin/orders/export', { responseType: 'blob' }),
+};
+
+// Community APIs
+export const communityAPI = {
+  getMembers: (params?: any) => api.get('/community/members', { params }),
+  login: (data: any) => api.post('/community/login', data),
+  updateProfile: (data: any) => api.put('/community/profile', data),
+  uploadPhoto: (data: FormData) => api.post('/community/profile/photo', data, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  checkoutCard: (data: { shippingAddress: string; fullName: string; companyAndDesignation: string; email: string; phone: string }) => api.post('/community/card/checkout', data),
 };

@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bebas_Neue } from 'next/font/google';
 import { ArrowLeft, AlertCircle, ChevronDown } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 import InteractiveSphere from '@/components/InteractiveSphere';
 import OrbitCardVisual from '@/components/OrbitCardVisual';
+import { communityAPI } from '@/lib/api';
 
 const bebas = Bebas_Neue({ subsets: ['latin'], weight: '400' });
 
@@ -61,7 +63,7 @@ function generateOrderReference() {
   return `BOC-${Date.now().toString(36).toUpperCase()}`;
 }
 
-export default function OrbitCardCheckoutPage() {
+function CheckoutContent() {
   // NOTE: this order form is fully mocked — no payment gateway, no backend call,
   // no persistence (not even localStorage). Submitting just simulates a brief
   // processing delay before showing the success modal. Real order/payment handling
@@ -89,17 +91,37 @@ export default function OrbitCardCheckoutPage() {
     gstin: '',
     agreeToTerms: false,
   });
-  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
-  const [orderReference, setOrderReference] = useState('');
+  
+  const searchParams = useSearchParams();
+  const paymentStatus = searchParams.get('payment');
+  
+  // Initialize state based on URL param
+  const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>(
+    paymentStatus === 'success' ? 'success' : 
+    paymentStatus === 'failed' || paymentStatus === 'error' ? 'error' : 'idle'
+  );
+  
+  const [orderReference, setOrderReference] = useState(
+    searchParams.get('orderId') || ''
+  );
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('processing');
     try {
-      setTimeout(() => {
-        setOrderReference(generateOrderReference());
-        setStatus('success');
-      }, 1500);
+      const address = `${formData.addressLine1}, ${formData.addressLine2 ? formData.addressLine2 + ', ' : ''}${formData.landmark ? formData.landmark + ', ' : ''}${formData.city}, ${formData.state} - ${formData.pincode}`;
+      const res = await communityAPI.checkoutCard({ 
+        shippingAddress: address,
+        fullName: formData.name,
+        companyAndDesignation: formData.company,
+        email: formData.email,
+        phone: formData.phone
+      });
+      if (res.data?.success && res.data?.data?.paymentUrl) {
+        window.location.href = res.data.data.paymentUrl;
+      } else {
+        setStatus('error');
+      }
     } catch {
       setStatus('error');
     }
@@ -452,5 +474,13 @@ export default function OrbitCardCheckoutPage() {
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+export default function OrbitCardCheckoutPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#121212] flex items-center justify-center text-[#A1A1A1] font-glacial">Loading...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

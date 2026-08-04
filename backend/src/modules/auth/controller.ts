@@ -56,17 +56,18 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       role: admin.role,
     });
 
+    const isSecure = req.secure || req.headers['x-forwarded-proto'] === 'https';
     res.cookie('access_token', accessToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
     res.cookie('refresh_token', refreshToken, {
       httpOnly: true,
-      secure: false,
-      sameSite: 'lax',
+      secure: isSecure,
+      sameSite: isSecure ? 'none' : 'lax',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
@@ -141,8 +142,8 @@ export const seedAdmin = async (): Promise<void> => {
       }
     }
 
-    // Write credentials to test_credentials.md
-    const credentialsPath = path.join('/app/memory');
+    // Write credentials to a local memory directory (removed hardcoded /app/memory)
+    const credentialsPath = path.join(__dirname, '../../../../memory');
     if (!fs.existsSync(credentialsPath)) {
       fs.mkdirSync(credentialsPath, { recursive: true });
     }
