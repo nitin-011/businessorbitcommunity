@@ -68,10 +68,20 @@ function AnimatedCardText({
 //   FRONT — wordmark only ("ORBIT CARD"), nothing else: no logo, no member
 //     data, no NFC glyph. Deliberately minimal per spec.
 //   BACK — member Name + Designation (sourced live from the checkout form —
-//     `formData.name` / `formData.company` in app/orbit-card/checkout/page.tsx
-//     — "Designation" here is really that form's single combined "Company &
-//     Designation" free-text field, not two separate values) + an NFC tap
-//     indicator + the lifetime-membership tag.
+//     `formData.name` / `cardDesignation` in app/orbit-card/checkout/page.tsx.
+//     `cardDesignation` is a derived "Company — Designation" string built
+//     from two separate form fields, `formData.company` and
+//     `formData.designation` — kept as two fields for clean/queryable
+//     records, joined into one line here purely for the card's limited
+//     space) + an NFC tap indicator + the lifetime-membership tag.
+// ELIGIBILITY: Orbit Card is founder-only — there is no student path or
+// category selector anywhere in the checkout flow. Confirmed multiple times
+// across this project; don't reintroduce one without explicit confirmation.
+// FINISH: "Gunmetal Titanium" aluminium material (chosen from a 4-option
+// showcase) — a brushed-metal gradient + fine diagonal brush lines + a soft
+// corner sheen, replacing the earlier plain dark card. Kept close in mood to
+// the site's original near-black cards (darker aluminium, not bright silver)
+// so it doesn't clash with the rest of the dark UI around it.
 function CardFace({
   side,
   compact,
@@ -83,22 +93,17 @@ function CardFace({
 }) {
   return (
     <div
-      className="absolute inset-0 rounded-2xl overflow-hidden border border-[#D4FF3F]/40 bg-gradient-to-br from-[#151515] to-[#0A0A0A] shadow-[0_0_40px_rgba(212,255,63,0.12)]"
+      className="absolute inset-0 rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_45px_-12px_rgba(0,0,0,0.6)]"
       style={{
         backfaceVisibility: "hidden",
         WebkitBackfaceVisibility: "hidden",
         transform: side === "back" ? "rotateY(180deg)" : undefined,
+        backgroundImage:
+          "repeating-linear-gradient(95deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 4px), linear-gradient(140deg, #6b7078 0%, #4a4e55 38%, #2d2f34 65%, #45484e 88%, #34363b 100%)",
       }}
     >
-      {/* Noise Texture Overlay */}
-      <div
-        className="pointer-events-none absolute inset-0 z-0 opacity-[0.04]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
-      {/* Corner Glow */}
-      <div className="pointer-events-none absolute -top-10 -right-10 w-32 h-32 bg-[#D4FF3F]/20 blur-3xl rounded-full" />
+      {/* Corner sheen — soft light catching the brushed surface */}
+      <div className="pointer-events-none absolute -top-8 -right-8 w-40 h-32 bg-white/20 blur-3xl rounded-full" />
 
       <div
         className={`relative z-10 h-full flex flex-col justify-between ${compact ? "p-4" : "p-6"}`}
@@ -139,6 +144,7 @@ export default function OrbitCardVisual({
         <motion.div
           className="relative w-full h-full"
           style={{ transformStyle: "preserve-3d" }}
+          initial={{ rotateY: defaultSide === "back" ? 180 : 0 }}
           animate={{ rotateY: flipped ? 180 : 0 }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
         >
@@ -146,7 +152,7 @@ export default function OrbitCardVisual({
           <CardFace side="front" compact={compact}>
             <div className="h-full flex items-center justify-center">
               <span
-                className={`font-glacial uppercase tracking-[0.25em] text-[#F5F5F5] ${
+                className={`font-glacial uppercase tracking-[0.25em] text-[#F2F3F4] ${
                   compact ? "text-[18px]" : "text-[24px] md:text-[28px]"
                 }`}
               >
@@ -160,10 +166,10 @@ export default function OrbitCardVisual({
             <div className="flex items-center gap-1.5">
               <Nfc
                 className={
-                  compact ? "w-3 h-3 text-[#D4FF3F]" : "w-4 h-4 text-[#D4FF3F]"
+                  compact ? "w-3 h-3 text-[#C7CAD0]" : "w-4 h-4 text-[#C7CAD0]"
                 }
               />
-              <span className="font-glacial text-[10px] uppercase tracking-[0.2em] text-[#D4FF3F]">
+              <span className="font-glacial text-[10px] uppercase tracking-[0.2em] text-[#C7CAD0]">
                 Tap to Connect
               </span>
             </div>
@@ -172,7 +178,7 @@ export default function OrbitCardVisual({
               <AnimatedCardText
                 text={name}
                 placeholder="Your Name Here"
-                className={`font-glacial uppercase tracking-wide text-[#F5F5F5] mb-1 ${
+                className={`font-glacial uppercase tracking-wide text-[#F2F3F4] mb-1 ${
                   compact ? "text-[13px]" : "text-[16px]"
                 }`}
               />
@@ -180,9 +186,9 @@ export default function OrbitCardVisual({
                 <AnimatedCardText
                   text={designation}
                   placeholder="Your Designation Here"
-                  className={`font-glacial text-[#A1A1A1] ${compact ? "text-[10px]" : "text-[12px]"}`}
+                  className={`font-glacial text-[#C7CAD0] ${compact ? "text-[10px]" : "text-[12px]"}`}
                 />
-                <span className="font-mono text-[10px] text-[#A1A1A1] shrink-0">
+                <span className="font-mono text-[10px] text-[#D4FF3F]/90 shrink-0">
                   LIFETIME MEMBER
                 </span>
               </div>
