@@ -471,15 +471,11 @@ export default function OrbitCardCheckoutPage() {
                 </h2>
 
                 <div className="mb-6">
-                  {/* Starts on the back face since that's where the live name/
-                      designation preview lives (front is wordmark-only) —
-                      still flippable to see the front. */}
                   <OrbitCardVisual
                     compact
-                    interactive
-                    defaultSide="back"
                     name={formData.name}
                     designation={cardDesignation}
+                    email={formData.email}
                   />
                 </div>
 
@@ -568,10 +564,9 @@ export default function OrbitCardCheckoutPage() {
               <div>
                 <OrbitCardVisual
                   compact
-                  interactive
-                  defaultSide="back"
                   name={formData.name}
                   designation={cardDesignation}
+                  email={formData.email}
                 />
               </div>
 

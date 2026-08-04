@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-import { Nfc, RotateCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Renders `text` as individually animated characters — each letter springs in as
@@ -9,11 +7,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 // normal DOM reflow (instant, no animation needed for that part); deliberately not
 // using framer-motion's `layout` prop here — under rapid keystrokes it left stale
 // transforms on characters (a FLIP-timing issue when updates arrive faster than the
-// layout animation settles). Falls back to a crossfaded placeholder when empty.
-// Index-based keys mean this animates beautifully for the common case (typing/
-// backspacing at the end) — a mid-string edit just updates instantly without an
-// enter/exit flourish, a reasonable tradeoff against a full text-diff animator.
-// Shared by both the name and designation lines on the card's back face.
+// layout animation settles). Falls back to a crossfaded placeholder when empty —
+// the placeholder is what's visible on the product page (no buyer data yet); real
+// checkout input replaces it live, letter by letter.
 function AnimatedCardText({
   text,
   placeholder,
@@ -58,144 +54,109 @@ function AnimatedCardText({
   );
 }
 
-// PRODUCTION / BACKEND NOTE — this component is the source of truth for what
-// actually gets printed/encoded on the physical NFC card. Plain-text version
-// of both faces + the finalized T&Cs also live in
-// agent-notes/orbit-card-content-spec.md for anyone who doesn't want to read
-// component code (e.g. whoever handles card printing/encoding).
-//   FRONT — wordmark only ("ORBIT CARD"), nothing else: no logo, no member
-//     data, no NFC glyph. Deliberately minimal per spec.
-//   BACK — member Name + Designation (sourced live from the checkout form —
-//     `formData.name` / `cardDesignation` in app/orbit-card/checkout/page.tsx.
-//     `cardDesignation` is a derived "Company — Designation" string built
-//     from two separate form fields, `formData.company` and
-//     `formData.designation` — kept as two fields for clean/queryable
-//     records, joined into one line here purely for the card's limited
-//     space) + an NFC tap indicator + the lifetime-membership tag.
+// PRODUCTION / BACKEND NOTE — this is the finalized Orbit Card design, built
+// as pure CSS/HTML (no image asset) from agent-notes/orbit-card.html's
+// "Silver / Steel" theme — brushed-metal gradient, perforated steel insert
+// panel on the right, "ORBIT CARD" brand mark top-left, holder info
+// (Name / Designation / Email) bottom-left. One view only, no front/back
+// flip. Sizing uses CSS container query units (cqw) so every measurement
+// scales proportionally with however wide the card is rendered — matches
+// the reference file's `calc(var(--w) * fraction)` pattern without needing
+// a fixed --w per instance.
+//   Product page (no props passed): shows the literal placeholders "Name" /
+//     "Designation" / "Email", unchanged — confirmed explicitly, don't wire
+//     real data in there.
+//   Checkout (name / designation / email passed from `formData`): live
+//     replaces those placeholders as the buyer types — `designation` here
+//     is `cardDesignation`, a derived "Company — Designation" string (see
+//     app/orbit-card/checkout/page.tsx), not the raw form field.
 // ELIGIBILITY: Orbit Card is founder-only — there is no student path or
 // category selector anywhere in the checkout flow. Confirmed multiple times
 // across this project; don't reintroduce one without explicit confirmation.
-// FINISH: "Gunmetal Titanium" aluminium material (chosen from a 4-option
-// showcase) — a brushed-metal gradient + fine diagonal brush lines + a soft
-// corner sheen, replacing the earlier plain dark card. Kept close in mood to
-// the site's original near-black cards (darker aluminium, not bright silver)
-// so it doesn't clash with the rest of the dark UI around it.
-function CardFace({
-  side,
-  compact,
-  children,
-}: {
-  side: 'front' | 'back';
-  compact: boolean;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className="absolute inset-0 rounded-2xl overflow-hidden border border-white/10 shadow-[0_20px_45px_-12px_rgba(0,0,0,0.6)]"
-      style={{
-        backfaceVisibility: 'hidden',
-        WebkitBackfaceVisibility: 'hidden',
-        transform: side === 'back' ? 'rotateY(180deg)' : undefined,
-        backgroundImage:
-          'repeating-linear-gradient(95deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 4px), linear-gradient(140deg, #6b7078 0%, #4a4e55 38%, #2d2f34 65%, #45484e 88%, #34363b 100%)',
-      }}
-    >
-      {/* Corner sheen — soft light catching the brushed surface */}
-      <div className="pointer-events-none absolute -top-8 -right-8 w-40 h-32 bg-white/20 blur-3xl rounded-full" />
-
-      <div className={`relative z-10 h-full flex flex-col justify-between ${compact ? 'p-4' : 'p-6'}`}>{children}</div>
-    </div>
-  );
-}
-
 export default function OrbitCardVisual({
   compact = false,
   name = '',
   designation = '',
-  interactive = false,
-  defaultSide = 'front',
+  email = '',
 }: {
   compact?: boolean;
   name?: string;
   designation?: string;
-  interactive?: boolean;
-  defaultSide?: 'front' | 'back';
+  email?: string;
 }) {
-  const [flipped, setFlipped] = useState(defaultSide === 'back');
-
   return (
-    <div className="w-full">
+    <div
+      data-testid="orbit-card-visual"
+      className={`relative mx-auto rounded-[20px] overflow-hidden transition-transform duration-[400ms] ease-out hover:-translate-y-1.5 ${
+        compact ? 'w-full max-w-[280px]' : 'w-full max-w-[380px]'
+      }`}
+      style={{
+        aspectRatio: '1.585 / 1',
+        containerType: 'inline-size',
+        backgroundImage:
+          'repeating-linear-gradient(100deg, rgba(255,255,255,0.035) 0px, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 3px), radial-gradient(circle at 62% 26%, rgba(255,255,255,0.22), transparent 60%), linear-gradient(135deg, #46484b 0%, #a8aaad 55%, #626366 100%)',
+        boxShadow: '0 2px 3px rgba(0,0,0,0.18), 0 20px 40px -12px rgba(0,0,0,0.45)',
+      }}
+    >
+      {/* Perforated steel insert panel, right side */}
       <div
-        data-testid="orbit-card-visual"
-        onClick={interactive ? () => setFlipped((f) => !f) : undefined}
-        className={`relative mx-auto ${
-          compact ? 'w-full max-w-[280px] aspect-[380/240]' : 'w-full max-w-[380px] aspect-[380/240]'
-        } ${interactive ? 'cursor-pointer' : ''}`}
-        style={{ perspective: '1200px' }}
+        className="absolute inset-y-0 right-0 pointer-events-none"
+        style={{
+          width: '30%',
+          backgroundImage: 'radial-gradient(rgba(20,20,22,0.55) 1.15px, transparent 1.4px)',
+          backgroundSize: '15px 15px',
+          backgroundPosition: 'calc(100% - 24px) 22px',
+          WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 12%, black 88%, transparent)',
+          maskImage: 'linear-gradient(to bottom, transparent, black 12%, black 88%, transparent)',
+        }}
       >
-        <motion.div
-          className="relative w-full h-full"
-          style={{ transformStyle: 'preserve-3d' }}
-          initial={{ rotateY: defaultSide === 'back' ? 180 : 0 }}
-          animate={{ rotateY: flipped ? 180 : 0 }}
-          transition={{ duration: 0.6, ease: 'easeInOut' }}
-        >
-          {/* FRONT — "Orbit Card" wordmark, nothing else */}
-          <CardFace side="front" compact={compact}>
-            <div className="h-full flex items-center justify-center">
-              <span
-                className={`font-glacial uppercase tracking-[0.25em] text-[#F2F3F4] ${
-                  compact ? 'text-[18px]' : 'text-[24px] md:text-[28px]'
-                }`}
-              >
-                Orbit Card
-              </span>
-            </div>
-          </CardFace>
-
-          {/* BACK — member details + NFC indicator */}
-          <CardFace side="back" compact={compact}>
-            <div className="flex items-center gap-1.5">
-              <Nfc className={compact ? 'w-3 h-3 text-[#C7CAD0]' : 'w-4 h-4 text-[#C7CAD0]'} />
-              <span className="font-glacial text-[10px] uppercase tracking-[0.2em] text-[#C7CAD0]">
-                Tap to Connect
-              </span>
-            </div>
-
-            <div>
-              <AnimatedCardText
-                text={name}
-                placeholder="Your Name Here"
-                className={`font-glacial uppercase tracking-wide text-[#F2F3F4] mb-1 ${
-                  compact ? 'text-[13px]' : 'text-[16px]'
-                }`}
-              />
-              <div className="flex items-end justify-between gap-3">
-                <AnimatedCardText
-                  text={designation}
-                  placeholder="Your Designation Here"
-                  className={`font-glacial text-[#C7CAD0] ${compact ? 'text-[10px]' : 'text-[12px]'}`}
-                />
-                <span className="font-mono text-[10px] text-[#D4FF3F]/90 shrink-0">LIFETIME MEMBER</span>
-              </div>
-            </div>
-          </CardFace>
-        </motion.div>
+        {/* Brighten the insert area so it reads as a distinct plate */}
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.14) 30%, rgba(255,255,255,0.14) 100%)' }}
+        />
+        {/* Soft seam where the plate meets the body */}
+        <div
+          className="absolute inset-y-0 left-0"
+          style={{ width: '40%', background: 'linear-gradient(to right, rgba(0,0,0,0.18), transparent)' }}
+        />
       </div>
 
-      {interactive && (
-        <div className="mt-3 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setFlipped((f) => !f)}
-            data-testid="orbit-card-visual-flip-button"
-            className="inline-flex items-center gap-1.5 text-[12px] text-[#A1A1A1] hover:text-[#F5F5F5] transition-colors"
-          >
-            <RotateCw className="w-3 h-3" />
-            Tap to flip
-          </button>
-        </div>
-      )}
+      {/* Inner edge highlight / shade for a touch of dimensionality */}
+      <div
+        className="absolute inset-0 rounded-[20px] pointer-events-none z-[3]"
+        style={{ boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -1px 0 rgba(0,0,0,0.35)' }}
+      />
+
+      {/* Brand */}
+      <div
+        className="absolute z-[2] font-glacial font-bold whitespace-nowrap text-[6.2cqw] text-[#FAFAFB]"
+        style={{ top: '8.5%', left: '8.5%', letterSpacing: '0.02em' }}
+      >
+        Orbit Card
+      </div>
+
+      {/* Holder info */}
+      <div
+        className="absolute z-[2] flex flex-col"
+        style={{ left: '8.5%', bottom: '9%', gap: '1.2cqw', maxWidth: '58%' }}
+      >
+        <AnimatedCardText
+          text={name}
+          placeholder="Name"
+          className="font-glacial font-semibold text-[4.3cqw] text-[#FAFAFB] leading-[1.1]"
+        />
+        <AnimatedCardText
+          text={designation}
+          placeholder="Designation"
+          className="font-glacial text-[3.2cqw] text-[#E8E9EA] leading-[1.1]"
+        />
+        <AnimatedCardText
+          text={email}
+          placeholder="Email"
+          className="font-glacial font-light text-[2.8cqw] text-[#D2D3D5] leading-[1.1]"
+        />
+      </div>
 
       {/* Local font-glacial style (matches the rest of the app's per-component pattern) */}
       <style

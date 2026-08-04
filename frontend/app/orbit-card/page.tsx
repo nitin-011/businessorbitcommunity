@@ -175,7 +175,7 @@ export default function OrbitCardPage() {
             transition={{ duration: 0.6, delay: 0.1 }}
             className="mb-16"
           >
-            <OrbitCardVisual interactive />
+            <OrbitCardVisual />
           </motion.div>
 
           {/* CORE PRODUCT BENEFITS */}
