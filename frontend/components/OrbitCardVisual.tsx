@@ -66,10 +66,12 @@ function AnimatedCardText({
 //   FRONT — wordmark only ("ORBIT CARD"), nothing else: no logo, no member
 //     data, no NFC glyph. Deliberately minimal per spec.
 //   BACK — member Name + Designation (sourced live from the checkout form —
-//     `formData.name` / `formData.company` in app/orbit-card/checkout/page.tsx
-//     — "Designation" here is really that form's single combined "Company &
-//     Designation" free-text field, not two separate values) + an NFC tap
-//     indicator + the lifetime-membership tag.
+//     `formData.name` / `cardDesignation` in app/orbit-card/checkout/page.tsx.
+//     `cardDesignation` is a derived "Company — Designation" string built
+//     from two separate form fields, `formData.company` and
+//     `formData.designation` — kept as two fields for clean/queryable
+//     records, joined into one line here purely for the card's limited
+//     space) + an NFC tap indicator + the lifetime-membership tag.
 // ELIGIBILITY: Orbit Card is founder-only — there is no student path or
 // category selector anywhere in the checkout flow. Confirmed multiple times
 // across this project; don't reintroduce one without explicit confirmation.

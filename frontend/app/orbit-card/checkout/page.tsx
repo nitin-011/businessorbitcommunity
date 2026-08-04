@@ -99,12 +99,16 @@ export default function OrbitCardCheckoutPage() {
   // place — see agent-notes/orbit-card-payment-integration.md for the
   // planned real flow. The 'error' status branch is scaffolded for that
   // future integration; nothing in the current mock can actually trigger it.
-  // BACKEND NOTE: `formData.name` and `formData.company` aren't just order
-  // data — they're what gets printed on the back of the physical card (see
-  // the PRODUCTION/BACKEND NOTE atop components/OrbitCardVisual.tsx and
-  // agent-notes/orbit-card-content-spec.md). Whatever real order pipeline
-  // replaces this mock needs to carry those fields through to card
-  // production, not just to a database record.
+  // BACKEND NOTE: `formData.name`, `formData.company`, and
+  // `formData.designation` aren't just order data — they're what gets
+  // printed on the back of the physical card, combined as "Company —
+  // Designation" (see the PRODUCTION/BACKEND NOTE atop
+  // components/OrbitCardVisual.tsx and agent-notes/orbit-card-content-spec.md).
+  // Kept as two separate fields (not one free-text field) specifically so
+  // records stay structured/queryable and the printed format is consistent
+  // regardless of how the buyer types — don't recombine them into one input.
+  // Whatever real order pipeline replaces this mock needs to carry all three
+  // fields through to card production, not just to a database record.
   // BACKEND NOTE — eligibility: Orbit Card is founder-only, deliberately —
   // there is no student path anywhere in this flow. Don't reintroduce a
   // category/student option without explicit confirmation; this has flipped
@@ -116,6 +120,7 @@ export default function OrbitCardCheckoutPage() {
     phone: '',
     email: '',
     company: '',
+    designation: '',
     addressLine1: '',
     addressLine2: '',
     landmark: '',
@@ -127,6 +132,11 @@ export default function OrbitCardCheckoutPage() {
   });
   const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'error'>('idle');
   const [orderReference, setOrderReference] = useState('');
+
+  // Single combined "Company — Designation" line for the card visual, built
+  // from the two clean fields rather than trusting free-typed formatting.
+  // Falls back gracefully if only one of the two is filled in yet.
+  const cardDesignation = [formData.company, formData.designation].filter(Boolean).join(' — ');
 
   const handleDetailsSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -245,7 +255,7 @@ export default function OrbitCardCheckoutPage() {
 
                       <div>
                         <label htmlFor="checkout-company" className="block text-[#111111] font-medium mb-1.5 text-sm">
-                          Company &amp; Designation
+                          Company
                         </label>
                         <input
                           id="checkout-company"
@@ -253,8 +263,24 @@ export default function OrbitCardCheckoutPage() {
                           value={formData.company}
                           onChange={(e) => setFormData({ ...formData, company: e.target.value })}
                           className={inputClasses}
-                          placeholder="Acme Inc. — Founder"
+                          placeholder="Acme Inc."
                           data-testid="orbit-card-checkout-company-input"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label htmlFor="checkout-designation" className="block text-[#111111] font-medium mb-1.5 text-sm">
+                          Designation
+                        </label>
+                        <input
+                          id="checkout-designation"
+                          type="text"
+                          value={formData.designation}
+                          onChange={(e) => setFormData({ ...formData, designation: e.target.value })}
+                          className={inputClasses}
+                          placeholder="Founder"
+                          data-testid="orbit-card-checkout-designation-input"
                           required
                         />
                       </div>
@@ -453,7 +479,7 @@ export default function OrbitCardCheckoutPage() {
                     interactive
                     defaultSide="back"
                     name={formData.name}
-                    designation={formData.company}
+                    designation={cardDesignation}
                   />
                 </div>
 
@@ -545,7 +571,7 @@ export default function OrbitCardCheckoutPage() {
                   interactive
                   defaultSide="back"
                   name={formData.name}
-                  designation={formData.company}
+                  designation={cardDesignation}
                 />
               </div>
 
@@ -557,6 +583,7 @@ export default function OrbitCardCheckoutPage() {
                 <div className="pt-3 border-t border-white/10">
                   <div className="text-[#F5F5F5] font-medium mb-1">Company &amp; Designation</div>
                   <div>{formData.company}</div>
+                  <div>{formData.designation}</div>
                 </div>
                 <div className="pt-3 border-t border-white/10">
                   <div className="text-[#F5F5F5] font-medium mb-1">Delivery Address</div>
