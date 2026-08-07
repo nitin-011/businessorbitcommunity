@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { authAPI } from '@/lib/api';
+import { createContext, useContext, useState, ReactNode } from "react";
+import { authAPI } from "@/lib/api";
 
 interface Admin {
   id: string;
@@ -37,7 +37,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       await authAPI.logout();
       setAdmin(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -51,7 +51,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 export function useAdminAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAdminAuth must be used within AdminAuthProvider');
+    throw new Error("useAdminAuth must be used within AdminAuthProvider");
   }
   return context;
 }

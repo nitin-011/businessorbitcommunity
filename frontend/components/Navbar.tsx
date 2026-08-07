@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Menu, X } from 'lucide-react';
-import { Bebas_Neue } from 'next/font/google';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Menu, X } from "lucide-react";
+import { Bebas_Neue } from "next/font/google";
 
 const bebas = Bebas_Neue({
-  subsets: ['latin'],
-  weight: '400',
+  subsets: ["latin"],
+  weight: "400",
 });
 
-import logoImg from '../assets/logo.png';
+import logoImg from "../assets/logo.png";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -22,10 +22,10 @@ export default function Navbar() {
       setScrolled(window.scrollY > 50);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -46,8 +46,8 @@ export default function Navbar() {
         data-testid="navbar"
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'backdrop-blur-xl bg-black/70 border-b border-white/5'
-            : 'bg-transparent'
+            ? "backdrop-blur-xl bg-black/70 border-b border-white/5"
+            : "bg-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-12">
@@ -75,6 +75,14 @@ export default function Navbar() {
               </Link>
 
               <Link
+                href="/community"
+                data-testid="nav-community-link"
+                className="text-[16px] text-[#F5F5F5] opacity-80 hover:opacity-100 hover:text-[#D4FF3F] transition-all"
+              >
+                Access to Community
+              </Link>
+
+              <Link
                 href="/join"
                 data-testid="nav-join-cta"
                 className={`${bebas.className} px-[24px] py-[10px] bg-[#D4FF3F] text-black rounded-full text-[18px] md:text-[20px] uppercase font-normal tracking-wide hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(212,255,63,0.4)] transition-all flex items-center justify-center`}
@@ -99,14 +107,6 @@ export default function Navbar() {
             <div className="md:hidden py-6 border-t border-white/10 font-glacial bg-[#0A0A0A] backdrop-blur-xl absolute top-full left-0 right-0 px-6 shadow-2xl">
               <div className="flex flex-col gap-5">
                 <Link
-                  href="/student"
-                  className="text-[18px] text-[#F5F5F5] opacity-90 transition-opacity"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  For Students
-                </Link>
-
-                <Link
                   href="/business"
                   className="text-[18px] text-[#F5F5F5] opacity-90 transition-opacity"
                   onClick={() => setMobileMenuOpen(false)}
@@ -115,11 +115,11 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  href="/admin"
-                  className="text-[16px] text-[#A1A1A1] transition-colors"
+                  href="/community"
+                  className="text-[18px] text-[#F5F5F5] opacity-90 transition-opacity"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Admin
+                  Access to Community
                 </Link>
 
                 <Link

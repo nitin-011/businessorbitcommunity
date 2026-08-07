@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document } from "mongoose";
 
 export interface ILoginAttempt extends Document {
   identifier: string;
@@ -14,4 +14,7 @@ const LoginAttemptSchema = new Schema<ILoginAttempt>({
   lockedUntil: { type: Date },
 });
 
-export const LoginAttempt = mongoose.model<ILoginAttempt>('LoginAttempt', LoginAttemptSchema);
+export const LoginAttempt = mongoose.model<ILoginAttempt>(
+  "LoginAttempt",
+  LoginAttemptSchema,
+);

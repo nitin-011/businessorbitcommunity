@@ -49,28 +49,21 @@ export default function FinalCTA() {
               You don&apos;t need more content. You need the right network.
             </p>
             <p className="font-glacial text-[16px] md:text-[18px] text-[#A1A1A1]">
-              Join builders, founders, and students already creating real opportunities.
+              Join builders and founders already creating real opportunities.
             </p>
           </motion.div>
 
-          {/* CTA Buttons */}
+          {/* CTA Button */}
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-[16px] mb-[40px] z-20 relative w-full sm:w-auto"
+            className="flex items-center justify-center mb-[40px] z-20 relative w-full sm:w-auto"
           >
             <Link
-              href="/student"
-              className="w-full sm:w-auto px-[32px] py-[16px] bg-[#D4FF3F] text-[#000000] rounded-full font-glacial font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] shadow-[0_0_20px_rgba(212,255,63,0.3)] hover:shadow-[0_0_40px_rgba(212,255,63,0.5)] text-center flex items-center justify-center"
-            >
-              Join as Student
-            </Link>
-
-            <Link
               href="/business"
-              className="w-full sm:w-auto px-[32px] py-[16px] bg-transparent border border-[#D4FF3F] text-[#111111] rounded-full font-glacial font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] hover:bg-[#D4FF3F] hover:text-[#000000] hover:shadow-[0_0_40px_rgba(212,255,63,0.5)] text-center flex items-center justify-center"
+              className="w-full sm:w-auto px-[32px] py-[16px] bg-[#D4FF3F] text-[#000000] rounded-full font-glacial font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] shadow-[0_0_20px_rgba(212,255,63,0.3)] hover:shadow-[0_0_40px_rgba(212,255,63,0.5)] text-center flex items-center justify-center"
             >
               Join as Founder
             </Link>

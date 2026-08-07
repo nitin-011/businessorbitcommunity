@@ -1,17 +1,23 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Bebas_Neue } from 'next/font/google';
-import InteractiveSphere from './InteractiveSphere';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Bebas_Neue } from "next/font/google";
+import InteractiveSphere from "./InteractiveSphere";
 
-const bebas = Bebas_Neue({ subsets: ['latin'], weight: '400' });
-const TYPING_WORDS = ["Internships", "Clients", "Funding", "Mentorship", "Growth"];
+const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400" });
+const TYPING_WORDS = [
+  "Internships",
+  "Clients",
+  "Funding",
+  "Mentorship",
+  "Growth",
+];
 
 export default function Hero() {
   const [wordIndex, setWordIndex] = useState(0);
-  const [text, setText] = useState('');
+  const [text, setText] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
@@ -21,7 +27,7 @@ export default function Hero() {
     const speed = isDeleting ? 40 : 100;
 
     if (isDeleting) {
-      if (text === '') {
+      if (text === "") {
         setIsDeleting(false);
         setWordIndex((prev) => (prev + 1) % TYPING_WORDS.length);
       } else {
@@ -46,11 +52,14 @@ export default function Hero() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @import url('https://fonts.cdnfonts.com/css/glacial-indifference-2');
         .font-glacial { font-family: 'Glacial Indifference', sans-serif; }
-      `}} />
+      `,
+        }}
+      />
       <section
         data-testid="hero-section"
         className="relative min-h-screen pt-10 bg-gradient-to-b from-[#0A0A0A] to-[#121212] overflow-hidden flex items-center justify-center selection:bg-[#D4FF3F] selection:text-black"
@@ -58,7 +67,9 @@ export default function Hero() {
         {/* Subtle Noise Texture Overlay */}
         <div
           className="pointer-events-none absolute inset-0 z-0 opacity-[0.03]"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
         />
 
         {/* Background Sphere Canvas */}
@@ -75,7 +86,9 @@ export default function Hero() {
             className="flex flex-col items-center"
           >
             {/* Headline */}
-            <h1 className={`${bebas.className} text-[40px] md:text-[56px] lg:text-[72px] uppercase font-normal text-[#F5F5F5] tracking-wide leading-[1.1] mb-6 max-w-5xl`}>
+            <h1
+              className={`${bebas.className} text-[40px] md:text-[56px] lg:text-[72px] uppercase font-normal text-[#F5F5F5] tracking-wide leading-[1.1] mb-6 max-w-5xl`}
+            >
               Build your career. Scale your startup.
             </h1>
 
@@ -94,7 +107,12 @@ export default function Hero() {
               transition={{ duration: 0.8, delay: 0.2 }}
               className="font-glacial text-[16px] lg:text-[18px] text-[#A1A1A1] leading-[1.6] mb-12 max-w-2xl mx-auto"
             >
-              An <span className="italic text-[#D4FF3F] opacity-90">action-oriented community</span> to access real opportunities, mentors, and growth <br /> All in one place.
+              An{" "}
+              <span className="italic text-[#D4FF3F] opacity-90">
+                action-oriented community
+              </span>{" "}
+              to access real opportunities, mentors, and growth <br /> All in
+              one place.
             </motion.p>
 
             {/* CTAs */}

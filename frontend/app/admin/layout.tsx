@@ -1,7 +1,11 @@
-'use client';
+"use client";
 
-import { AdminAuthProvider } from './AuthContext';
+import { AdminAuthProvider } from "./AuthContext";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return <AdminAuthProvider>{children}</AdminAuthProvider>;
 }

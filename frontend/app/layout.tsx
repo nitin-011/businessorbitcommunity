@@ -1,13 +1,13 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-import Providers from './providers';
+import type { Metadata } from "next";
+import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import Providers from "./providers";
 
 export const metadata: Metadata = {
-  title: 'Business Orbit - Join the Most Action-Oriented Community',
+  title: "Business Orbit - Join the Most Action-Oriented Community",
   description:
-    'Connect with high-quality professionals, access exclusive opportunities, and grow your network.',
+    "Connect with high-quality professionals, access exclusive opportunities, and grow your network.",
 };
 
 export default function RootLayout({

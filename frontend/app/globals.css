@@ -1,12 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
 @font-face {
-  font-family: 'Cabinet Grotesk';
-  src: url('https://fonts.cdnfonts.com/css/cabinet-grotesk') format('woff2');
+  font-family: "Cabinet Grotesk";
+  src: url("https://fonts.cdnfonts.com/css/cabinet-grotesk") format("woff2");
   font-weight: 300 900;
   font-display: swap;
 }
@@ -22,13 +20,18 @@ html {
 }
 
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Cabinet Grotesk', sans-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Cabinet Grotesk", sans-serif;
   font-weight: 700;
 }
 
