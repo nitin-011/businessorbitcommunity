@@ -117,4 +117,3 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
   res.clearCookie("refresh_token");
   res.json({ message: "Logout successful" });
 };
-

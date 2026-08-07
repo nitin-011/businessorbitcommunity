@@ -13,8 +13,9 @@ export const generateOTP = (options: OTPGenerateOptions = {}): string => {
     return Math.floor(min + Math.random() * (max - min + 1)).toString();
   }
 
-  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  let otp = '';
+  const chars =
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+  let otp = "";
   for (let i = 0; i < length; i++) {
     otp += chars.charAt(Math.floor(Math.random() * chars.length));
   }

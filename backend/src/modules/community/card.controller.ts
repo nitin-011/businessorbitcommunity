@@ -20,7 +20,9 @@ try {
     phonepeEnv,
   );
 } catch (error: any) {
-  console.warn("⚠️ PhonePe SDK Initialization Failed. Payments will be unavailable.");
+  console.warn(
+    "⚠️ PhonePe SDK Initialization Failed. Payments will be unavailable.",
+  );
   console.warn("Reason:", error?.message || String(error));
 }
 
@@ -85,13 +87,11 @@ export const checkoutCard = async (req: AuthRequest, res: Response) => {
     });
   } catch (error: any) {
     console.error("Checkout error:", error?.response?.data || error);
-    return res
-      .status(500)
-      .json({
-        success: false,
-        message: "Payment initiation failed",
-        error: error?.response?.data || error?.message || String(error),
-      });
+    return res.status(500).json({
+      success: false,
+      message: "Payment initiation failed",
+      error: error?.response?.data || error?.message || String(error),
+    });
   }
 };
 

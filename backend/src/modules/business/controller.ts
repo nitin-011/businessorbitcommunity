@@ -45,7 +45,10 @@ export const apply = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const adminApprove = async (req: Request, res: Response): Promise<void> => {
+export const adminApprove = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const { id } = req.params;
     const business = await Business.findById(id);
@@ -64,13 +67,15 @@ export const adminApprove = async (req: Request, res: Response): Promise<void> =
     const baseUsername = (business.name || business.company)
       .toLowerCase()
       .replace(/[^a-z0-9]/g, "");
-    
+
     let generatedUsername = baseUsername;
     let usernameExists = true;
     let suffix = 1;
 
     while (usernameExists) {
-      const existingUser = await Business.findOne({ username: generatedUsername });
+      const existingUser = await Business.findOne({
+        username: generatedUsername,
+      });
       if (!existingUser) {
         usernameExists = false;
       } else {
@@ -79,7 +84,7 @@ export const adminApprove = async (req: Request, res: Response): Promise<void> =
         generatedUsername = `${baseUsername}${randomNum}`;
         suffix++;
         // Safety break
-        if (suffix > 20) break; 
+        if (suffix > 20) break;
       }
     }
 
@@ -108,12 +113,10 @@ export const adminApprove = async (req: Request, res: Response): Promise<void> =
     });
 
     // Send approval email with login credentials
-    await sendApprovalEmail(
-      business.email,
-      business.name,
-      "business",
-      { username: generatedUsername, password: generatedPassword }
-    );
+    await sendApprovalEmail(business.email, business.name, "business", {
+      username: generatedUsername,
+      password: generatedPassword,
+    });
 
     res.status(200).json({
       message: "Business approved successfully and login credentials sent",

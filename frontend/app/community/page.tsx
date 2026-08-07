@@ -39,26 +39,33 @@ const MemberSkeleton = () => (
 );
 
 export default function CommunityPage() {
-  const [credentials, setCredentials] = useState({ identifier: "", password: "" });
-  const [status, setStatus] = useState<"login" | "processing" | "directory" | "checking_session">(
-    "checking_session",
-  );
+  const [credentials, setCredentials] = useState({
+    identifier: "",
+    password: "",
+  });
+  const [status, setStatus] = useState<
+    "login" | "processing" | "directory" | "checking_session"
+  >("checking_session");
 
   useEffect(() => {
-    communityAPI.getMe()
+    communityAPI
+      .getMe()
       .then(() => setStatus("directory"))
       .catch(() => setStatus("login"));
   }, []);
 
-  const { data: membersResponse, isLoading, isError } = useQuery({
+  const {
+    data: membersResponse,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["communityMembers"],
     queryFn: () => communityAPI.getMembers().then((res) => res.data),
     enabled: status === "directory",
   });
 
   const members = membersResponse?.data?.members || [];
-  const membersCount =
-    membersResponse?.data?.pagination?.total || 0;
+  const membersCount = membersResponse?.data?.pagination?.total || 0;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,7 +74,9 @@ export default function CommunityPage() {
       const isEmail = credentials.identifier.includes("@");
       const payload = {
         password: credentials.password,
-        ...(isEmail ? { email: credentials.identifier } : { username: credentials.identifier })
+        ...(isEmail
+          ? { email: credentials.identifier }
+          : { username: credentials.identifier }),
       };
       await communityAPI.login(payload);
       setStatus("directory");

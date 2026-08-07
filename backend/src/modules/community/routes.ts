@@ -2,7 +2,13 @@ import { Router } from "express";
 import multer from "multer";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
 import { v2 as cloudinary } from "cloudinary";
-import { getMembers, login, updateProfile, uploadPhoto, getMe } from "./controller";
+import {
+  getMembers,
+  login,
+  updateProfile,
+  uploadPhoto,
+  getMe,
+} from "./controller";
 import { checkoutCard, paymentRedirect } from "./card.controller";
 import {
   requireCommunityAuth,

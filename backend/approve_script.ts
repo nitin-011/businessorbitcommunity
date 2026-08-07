@@ -7,9 +7,11 @@ dotenv.config();
 async function main() {
   const MONGO_URL = process.env.MONGO_URL || "mongodb://localhost:27017";
   const email = "reetabrata.bhandari@gmail.com";
-  
+
   console.log(`Connecting to MongoDB at ${MONGO_URL}...`);
-  await mongoose.connect(MONGO_URL, { dbName: process.env.DB_NAME || "business_orbit" });
+  await mongoose.connect(MONGO_URL, {
+    dbName: process.env.DB_NAME || "business_orbit",
+  });
   console.log("Connected to MongoDB.");
 
   console.log(`Searching for founder with email: ${email}...`);

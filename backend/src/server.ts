@@ -21,24 +21,29 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-      
+
       // Check if the origin is in the allowed list (ignoring trailing slashes)
-      const isAllowed = config.corsOrigins.some(allowedOrigin => 
-        origin === allowedOrigin || 
-        origin === allowedOrigin.replace(/\/$/, '') || 
-        allowedOrigin === '*'
+      const isAllowed = config.corsOrigins.some(
+        (allowedOrigin) =>
+          origin === allowedOrigin ||
+          origin === allowedOrigin.replace(/\/$/, "") ||
+          allowedOrigin === "*",
       );
 
       if (isAllowed) {
         callback(null, true);
       } else {
         console.warn(`Blocked CORS request from origin: ${origin}`);
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "ngrok-skip-browser-warning",
+    ],
   }),
 );
 app.use(express.json());
@@ -66,7 +71,6 @@ app.get("/api", (req: Request, res: Response) => {
 const startServer = async () => {
   try {
     await connectDatabase();
-
 
     const port = config.port;
     app.listen(port, () => {

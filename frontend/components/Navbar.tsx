@@ -130,7 +130,6 @@ export default function Navbar() {
                   Access to Community
                 </Link>
 
-
                 <Link
                   href="/join"
                   className={`${bebas.className} px-[24px] py-[14px] mt-2 bg-[#D4FF3F] text-black rounded-full text-[20px] uppercase font-normal tracking-wide text-center`}
