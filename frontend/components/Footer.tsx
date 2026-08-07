@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import Link from "next/link";
+import Link from 'next/link';
 
 export default function Footer() {
   return (
@@ -11,16 +11,7 @@ export default function Footer() {
             © 2024 Business Orbit. All rights reserved.
           </div>
           <div className="flex gap-8">
-            <Link
-              href="/student"
-              className="text-white/60 hover:text-white transition-colors text-sm"
-            >
-              For Students
-            </Link>
-            <Link
-              href="/business"
-              className="text-white/60 hover:text-white transition-colors text-sm"
-            >
+            <Link href="/business" className="text-white/60 hover:text-white transition-colors text-sm">
               For Business
             </Link>
           </div>
