@@ -61,17 +61,19 @@ export const getMembers = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const { email, password } = req.body;
+    const { email, username, password } = req.body;
 
-    if (!email || !password) {
+    if ((!email && !username) || !password) {
       return res
         .status(400)
-        .json({ success: false, message: "Email and password required" });
+        .json({ success: false, message: "Email/username and password required" });
     }
 
-    const member = await CommunityMember.findOne({
-      email: email.toLowerCase(),
-    });
+    const query = email 
+      ? { email: email.toLowerCase() } 
+      : { username: username.toLowerCase() };
+
+    const member = await CommunityMember.findOne(query);
 
     if (!member) {
       return res

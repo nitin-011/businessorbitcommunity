@@ -108,7 +108,7 @@ BACKEND_PID=$!
 
 (
   cd "$FRONTEND_DIR"
-  npm run build && npm run start
+  npm run dev
 ) &
 FRONTEND_PID=$!
 

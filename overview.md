@@ -125,8 +125,4 @@ URL (see the code comment in `app/business/page.tsx`) — the Mongoose field is 
 
 Admin login → bcrypt-verify password → issue `access_token` (15 min) + `refresh_token`
 (7 day) as httpOnly cookies → `authMiddleware` on all `/api/admin/*` routes reads the
-cookie and verifies. `seedAdmin()` runs on every server boot: creates the admin user
-from `ADMIN_EMAIL`/`ADMIN_PASSWORD` env vars if missing, or re-hashes the password if
-it changed. It also tries to write credentials to a hardcoded `/app/memory/` path
-(leftover from the Emergent container environment) — harmless locally, just logs a
-caught `ENOENT` error every boot. See known-issues.md.
+cookie and verifies. The admin user can be seeded manually using the `backend/scripts/seed_admin.ts` script, which creates the admin user from `ADMIN_EMAIL`/`ADMIN_PASSWORD` env vars if missing, or re-hashes the password if it changed.

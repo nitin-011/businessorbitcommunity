@@ -37,6 +37,32 @@ export default function BusinessPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const { name, company, role, stage, email, phone } = formData;
+    if (!name || !company || !role || !stage || !email || !phone) {
+      setError("All fields are required.");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+
+    const digitsOnly = phone.replace(/\D/g, "");
+    if (digitsOnly.length < 10) {
+      setError("Please enter a valid phone number with at least 10 digits.");
+      return;
+    }
+
+    const urlRegex = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/i;
+    if (!urlRegex.test(role)) {
+      setError("Please enter a valid LinkedIn or Website URL.");
+      return;
+    }
+
+    setError("");
     applyMutation.mutate();
   };
 
@@ -76,40 +102,40 @@ export default function BusinessPage() {
         />
 
         {/* SPLIT LAYOUT CONTAINER */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 xl:px-12 flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
-          {/* ========================================================= */}
-          {/* LEFT SIDE — FORM (Fixed/Sticky on Desktop, Top on Mobile) */}
-          {/* ========================================================= */}
-          <div className="w-full lg:w-[45%] flex flex-col lg:sticky lg:top-28">
-            <div className="w-full bg-[#FFFFFF] rounded-2xl md:rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-6 md:p-10 flex flex-col justify-center">
-              <h1
-                className={`${bebas.className} text-4xl md:text-[44px] text-[#111111] leading-[1] mb-2 uppercase`}
-              >
-                Join as a Founder
-              </h1>
-              <p className="text-base text-[#6B7280] mb-6">
-                Get access to talent, network, and opportunities
-              </p>
-
-              {/* FREE HIGHLIGHT */}
-              <div className="mb-6 px-4 py-3 md:px-5 md:py-4 rounded-xl bg-[#D4FF3F]/10 border border-[#D4FF3F]/40 shadow-[0_0_20px_rgba(212,255,63,0.15)] relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4FF3F]/20 blur-2xl rounded-full pointer-events-none" />
-                <p className="font-bold text-[15px] md:text-[16px] text-[#111111] leading-tight mb-1">
-                  100% <span className="text-[#86A810]">FREE</span> FOR LIFETIME
+        {!success ? (
+          <div className="relative z-10 max-w-7xl mx-auto px-6 md:px-8 xl:px-12 flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+            {/* ========================================================= */}
+            {/* LEFT SIDE — FORM (Fixed/Sticky on Desktop, Top on Mobile) */}
+            {/* ========================================================= */}
+            <div className="w-full lg:w-[45%] flex flex-col lg:sticky lg:top-28">
+              <div className="w-full bg-[#FFFFFF] rounded-2xl md:rounded-[24px] shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-6 md:p-10 flex flex-col justify-center">
+                <h1
+                  className={`${bebas.className} text-4xl md:text-[44px] text-[#111111] leading-[1] mb-2 uppercase`}
+                >
+                  Join as a Founder
+                </h1>
+                <p className="text-base text-[#6B7280] mb-6">
+                  Get access to talent, network, and opportunities
                 </p>
-                <p className="text-[13px] md:text-[14px] text-[#6B7280]">
-                  No hidden costs. No paid access.
-                </p>
-              </div>
 
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
-                  {error}
+                {/* FREE HIGHLIGHT */}
+                <div className="mb-6 px-4 py-3 md:px-5 md:py-4 rounded-xl bg-[#D4FF3F]/10 border border-[#D4FF3F]/40 shadow-[0_0_20px_rgba(212,255,63,0.15)] relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-[#D4FF3F]/20 blur-2xl rounded-full pointer-events-none" />
+                  <p className="font-bold text-[15px] md:text-[16px] text-[#111111] leading-tight mb-1">
+                    100% <span className="text-[#86A810]">FREE</span> FOR LIFETIME
+                  </p>
+                  <p className="text-[13px] md:text-[14px] text-[#6B7280]">
+                    No hidden costs. No paid access.
+                  </p>
                 </div>
-              )}
 
-              {/* MAIN FORM */}
-              {!success ? (
+                {error && (
+                  <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm">
+                    {error}
+                  </div>
+                )}
+
+                {/* MAIN FORM */}
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -225,48 +251,6 @@ export default function BusinessPage() {
                     </button>
                   </div>
                 </form>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="w-20 h-20 bg-[#D4FF3F]/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg
-                      className="w-10 h-10 text-[#86A810]"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                  </div>
-                  <h2 className="text-2xl font-bold text-[#111111] mb-3">
-                    Application Received
-                  </h2>
-                  <p className="text-[#6B7280] mb-8 leading-relaxed">
-                    Thank you for applying. We'll review your founder profile
-                    and network credentials, and reach out to you directly soon.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setSuccess(false);
-                      setFormData({
-                        name: "",
-                        company: "",
-                        role: "",
-                        stage: "",
-                        email: "",
-                        phone: "",
-                      });
-                    }}
-                    className="inline-block w-full px-6 py-4 bg-[#111111] text-[#FFFFFF] rounded-full font-bold text-[16px] tracking-wide hover:scale-[1.03] transition-all hover:shadow-[0_0_20px_rgba(0,0,0,0.4)]"
-                  >
-                    Submit Another
-                  </button>
-                </div>
-              )}
 
               {/* Trust Text */}
               <div className="mt-8 pt-6 border-t border-[#F3F4F6] flex flex-wrap items-center justify-center gap-[6px] md:gap-[10px] text-[12px] md:text-[13px] text-[#A1A1A1] font-medium">
@@ -541,6 +525,59 @@ export default function BusinessPage() {
             </div>
           </div>
         </div>
+        ) : (
+          <div className="relative z-10 max-w-3xl mx-auto px-6 py-20 lg:py-32 flex flex-col items-center justify-center text-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
+              className="w-full bg-[#1A1A1A]/80 backdrop-blur-xl border border-[#333] rounded-[32px] p-10 md:p-16 shadow-[0_30px_60px_rgba(0,0,0,0.6)]"
+            >
+              <div className="w-24 h-24 bg-[#D4FF3F]/20 rounded-full flex items-center justify-center mx-auto mb-8 relative">
+                <div className="absolute inset-0 bg-[#D4FF3F]/10 blur-xl rounded-full" />
+                <svg
+                  className="w-12 h-12 text-[#D4FF3F] relative z-10"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M5 13l4 4L19 7"
+                  />
+                </svg>
+              </div>
+              
+              <h2 className={`${bebas.className} text-5xl md:text-6xl text-[#F5F5F5] uppercase mb-4 tracking-tight`}>
+                Application Received!
+              </h2>
+              
+              <p className="text-xl text-[#A1A1A1] leading-relaxed mb-10 max-w-xl mx-auto">
+                Your details have been submitted successfully and are <strong className="text-[#FFFFFF]">awaiting admin approval</strong>. 
+                Once approved, your login details will be sent directly to your email.
+              </p>
+
+              <button
+                onClick={() => {
+                  setSuccess(false);
+                  setFormData({
+                    name: "",
+                    company: "",
+                    role: "",
+                    stage: "",
+                    email: "",
+                    phone: "",
+                  });
+                }}
+                className="inline-block px-10 py-5 bg-[#D4FF3F] text-black rounded-full font-bold text-[16px] tracking-wide hover:scale-[1.03] transition-all duration-300 hover:shadow-[0_0_20px_rgba(212,255,63,0.4)]"
+              >
+                Back to Home
+              </button>
+            </motion.div>
+          </div>
+        )}
       </div>
     </>
   );

@@ -39,7 +39,7 @@ const MemberSkeleton = () => (
 );
 
 export default function CommunityPage() {
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
+  const [credentials, setCredentials] = useState({ identifier: "", password: "" });
   const [status, setStatus] = useState<"login" | "processing" | "directory" | "checking_session">(
     "checking_session",
   );
@@ -64,7 +64,12 @@ export default function CommunityPage() {
     e.preventDefault();
     setStatus("processing");
     try {
-      await communityAPI.login(credentials);
+      const isEmail = credentials.identifier.includes("@");
+      const payload = {
+        password: credentials.password,
+        ...(isEmail ? { email: credentials.identifier } : { username: credentials.identifier })
+      };
+      await communityAPI.login(payload);
       setStatus("directory");
     } catch (err) {
       alert("Login failed. Please check your credentials.");
@@ -73,7 +78,7 @@ export default function CommunityPage() {
   };
 
   const handleSignOut = () => {
-    setCredentials({ email: "", password: "" });
+    setCredentials({ identifier: "", password: "" });
     setStatus("login");
   };
 
@@ -152,20 +157,20 @@ export default function CommunityPage() {
                       htmlFor="community-email"
                       className="block text-[#111111] font-medium mb-1.5 text-sm"
                     >
-                      Email Address
+                      Email or Username
                     </label>
                     <input
                       id="community-email"
-                      type="email"
-                      value={credentials.email}
+                      type="text"
+                      value={credentials.identifier}
                       onChange={(e) =>
                         setCredentials({
                           ...credentials,
-                          email: e.target.value,
+                          identifier: e.target.value,
                         })
                       }
                       className={inputClasses}
-                      placeholder="jane@example.com"
+                      placeholder="jane@example.com or jane892"
                       data-testid="community-email-input"
                       required
                     />

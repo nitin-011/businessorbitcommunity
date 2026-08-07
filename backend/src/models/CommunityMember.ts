@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface ICommunityMember extends Document {
   name: string;
+  username?: string;
   role?: string;
   bio?: string;
   linkedin?: string;
@@ -18,6 +19,7 @@ export interface ICommunityMember extends Document {
 const CommunityMemberSchema = new Schema<ICommunityMember>(
   {
     name: { type: String, required: true },
+    username: { type: String, unique: true, sparse: true },
     role: { type: String },
     bio: { type: String },
     linkedin: { type: String },

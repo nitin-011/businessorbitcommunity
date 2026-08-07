@@ -60,6 +60,7 @@ export default function CommunityMemberCard({
           {getInitials(member.name)}
         </span>
         {showPhoto && (
+          /* eslint-disable-next-line @next/next/no-img-element */
           <img
             src={member.photoUrl}
             alt={member.name}

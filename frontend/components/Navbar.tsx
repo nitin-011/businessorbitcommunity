@@ -130,13 +130,6 @@ export default function Navbar() {
                   Access to Community
                 </Link>
 
-                <Link
-                  href="/admin"
-                  className="text-[16px] text-[#A1A1A1] transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Admin
-                </Link>
 
                 <Link
                   href="/join"

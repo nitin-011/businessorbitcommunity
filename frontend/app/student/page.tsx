@@ -280,7 +280,7 @@ export default function StudentPage() {
                       Verify Your Email
                     </h2>
                     <p className="text-[#6B7280] text-sm">
-                      We've sent a 6-digit code to{" "}
+                      We&apos;ve sent a 6-digit code to{" "}
                       <span className="font-semibold text-[#111111]">
                         {formData.email}
                       </span>

@@ -80,7 +80,16 @@ export const sendBulkEmail = async (recipients: string[], subject: string, conte
   await sendMail({ to: recipients, subject, html: content });
 };
 
-export const sendApprovalEmail = async (to: string, name: string, userType: "student" | "business"): Promise<void> => {
+export const sendApprovalEmail = async (to: string, name: string, userType: "student" | "business", loginDetails?: { username?: string; password?: string }): Promise<void> => {
+  const loginSection = loginDetails?.username && loginDetails?.password ? `
+      <div style="background: #f9f9f9; border-left: 4px solid #000; padding: 20px; margin: 30px 0;">
+        <h3 style="margin-top: 0; color: #000;">Your Login Credentials</h3>
+        <p style="margin-bottom: 5px;"><strong>Username:</strong> ${loginDetails.username}</p>
+        <p style="margin-bottom: 5px;"><strong>Password:</strong> ${loginDetails.password}</p>
+        <p style="font-size: 14px; color: #666; margin-top: 15px;"><em>Please log in and change your password immediately.</em></p>
+      </div>
+  ` : '';
+
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h1 style="color: #000;">🎉 Welcome to Business Orbit, ${name}!</h1>
@@ -91,6 +100,7 @@ export const sendApprovalEmail = async (to: string, name: string, userType: "stu
         <h2 style="margin: 0 0 10px 0;">You're In! ✅</h2>
         <p style="margin: 0;">Start connecting with ${userType === "student" ? "opportunities and events" : "founders and business leaders"}</p>
       </div>
+      ${loginSection}
       <p style="font-size: 16px; line-height: 1.6;">
         Watch your inbox for updates about upcoming events, networking opportunities, and exclusive programs.
       </p>

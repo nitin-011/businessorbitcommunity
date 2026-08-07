@@ -11,12 +11,18 @@ import {
 const phonepeEnv =
   config.phonepeEnv === "PRODUCTION" ? Env.PRODUCTION : Env.SANDBOX;
 
-const client = StandardCheckoutClient.getInstance(
-  config.phonepeClientId,
-  config.phonepeClientSecret,
-  parseInt(config.phonepeClientVersion) || 1,
-  phonepeEnv,
-);
+let client: StandardCheckoutClient | null = null;
+try {
+  client = StandardCheckoutClient.getInstance(
+    config.phonepeClientId,
+    config.phonepeClientSecret,
+    parseInt(config.phonepeClientVersion) || 1,
+    phonepeEnv,
+  );
+} catch (error: any) {
+  console.warn("⚠️ PhonePe SDK Initialization Failed. Payments will be unavailable.");
+  console.warn("Reason:", error?.message || String(error));
+}
 
 export const checkoutCard = async (req: AuthRequest, res: Response) => {
   try {
@@ -54,6 +60,14 @@ export const checkoutCard = async (req: AuthRequest, res: Response) => {
     // Instead of redirecting directly to frontend, we intercept the redirect at our backend to check order status
     const redirectUrl = `${config.apiUrl}/api/community/card/payment-status?orderId=${transactionId}`;
 
+    if (!client) {
+      return res.status(503).json({
+        success: false,
+        message: "Payment provider unavailable",
+        error: "PhonePe SDK not initialized properly.",
+      });
+    }
+
     const request = StandardCheckoutPayRequest.builder()
       .merchantOrderId(transactionId)
       .amount(amount)
@@ -89,6 +103,12 @@ export const paymentRedirect = async (req: Request, res: Response) => {
     if (!orderId) {
       return res.redirect(
         `${config.frontendUrl}/orbit-card/checkout?payment=error_missing_order_id`,
+      );
+    }
+
+    if (!client) {
+      return res.redirect(
+        `${config.frontendUrl}/orbit-card/checkout?payment=error_provider_unavailable`,
       );
     }
 

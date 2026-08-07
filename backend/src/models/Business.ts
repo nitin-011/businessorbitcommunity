@@ -6,6 +6,10 @@ export interface IBusiness extends Document {
   role: string;
   stage: string;
   email: string;
+  phone: string;
+  username?: string;
+  password?: string;
+  requiresPasswordChange: boolean;
   status: "pending" | "approved" | "rejected";
   createdAt: Date;
   updatedAt: Date;
@@ -18,6 +22,10 @@ const BusinessSchema = new Schema<IBusiness>(
     role: { type: String, required: true },
     stage: { type: String, required: true },
     email: { type: String, required: true, unique: true, lowercase: true },
+    phone: { type: String, required: true },
+    username: { type: String, unique: true, sparse: true },
+    password: { type: String },
+    requiresPasswordChange: { type: Boolean, default: true },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

@@ -34,6 +34,7 @@ export const businessAPI = {
     role: string;
     stage: string;
     email: string;
+    phone: string;
   }) => api.post("/business/apply", data),
 };
 
