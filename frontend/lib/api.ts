@@ -10,16 +10,6 @@ export const api = axios.create({
   withCredentials: true,
 });
 
-// Student APIs
-export const studentAPI = {
-  apply: (data: { name: string; college: string; course: string; email: string }) =>
-    api.post('/student/apply', data),
-  sendOTP: (email: string) => api.post('/student/send-otp', { email }),
-  verifyOTP: (email: string, otp: string) => api.post('/student/verify-otp', { email, otp }),
-  submitID: (email: string, idCardLink: string) =>
-    api.post('/student/submit-id', { email, idCardLink }),
-};
-
 // Business APIs
 export const businessAPI = {
   apply: (data: { name: string; company: string; role: string; stage: string; email: string }) =>

@@ -107,14 +107,6 @@ export default function Navbar() {
             <div className="md:hidden py-6 border-t border-white/10 font-glacial bg-[#0A0A0A] backdrop-blur-xl absolute top-full left-0 right-0 px-6 shadow-2xl">
               <div className="flex flex-col gap-5">
                 <Link
-                  href="/student"
-                  className="text-[18px] text-[#F5F5F5] opacity-90 transition-opacity"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  For Students
-                </Link>
-
-                <Link
                   href="/business"
                   className="text-[18px] text-[#F5F5F5] opacity-90 transition-opacity"
                   onClick={() => setMobileMenuOpen(false)}
