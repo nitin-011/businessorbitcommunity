@@ -67,14 +67,6 @@ export default function Navbar() {
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8 font-glacial">
               <Link
-                href="/business"
-                data-testid="nav-business-link"
-                className="text-[16px] text-[#F5F5F5] opacity-80 hover:opacity-100 hover:text-[#D4FF3F] transition-all"
-              >
-                For Business
-              </Link>
-
-              <Link
                 href="/community"
                 data-testid="nav-community-link"
                 className="text-[16px] text-[#F5F5F5] opacity-80 hover:opacity-100 hover:text-[#D4FF3F] transition-all"
@@ -83,7 +75,7 @@ export default function Navbar() {
               </Link>
 
               <Link
-                href="/join"
+                href="/business"
                 data-testid="nav-join-cta"
                 className={`${bebas.className} px-[24px] py-[10px] bg-[#D4FF3F] text-black rounded-full text-[18px] md:text-[20px] uppercase font-normal tracking-wide hover:scale-[1.03] hover:shadow-[0_0_15px_rgba(212,255,63,0.4)] transition-all flex items-center justify-center`}
               >
@@ -107,14 +99,6 @@ export default function Navbar() {
             <div className="md:hidden py-6 border-t border-white/10 font-glacial bg-[#0A0A0A] backdrop-blur-xl absolute top-full left-0 right-0 px-6 shadow-2xl">
               <div className="flex flex-col gap-5">
                 <Link
-                  href="/business"
-                  className="text-[18px] text-[#F5F5F5] opacity-90 transition-opacity"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  For Business
-                </Link>
-
-                <Link
                   href="/community"
                   className="text-[18px] text-[#F5F5F5] opacity-90 transition-opacity"
                   onClick={() => setMobileMenuOpen(false)}
@@ -131,7 +115,7 @@ export default function Navbar() {
                 </Link>
 
                 <Link
-                  href="/join"
+                  href="/business"
                   className={`${bebas.className} px-[24px] py-[14px] mt-2 bg-[#D4FF3F] text-black rounded-full text-[20px] uppercase font-normal tracking-wide text-center`}
                   onClick={() => setMobileMenuOpen(false)}
                 >

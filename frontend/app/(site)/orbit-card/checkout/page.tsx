@@ -59,6 +59,26 @@ const INDIAN_STATES = [
 
 type Step = 'details' | 'delivery' | 'payment' | 'confirmation';
 
+// Pricing (updated 2026-08-07): GST is charged over and above the ₹9,999 base
+// price, not baked into it — do not go back to an "inclusive of all taxes"
+// framing without explicit confirmation. Shipping stays "Free" for now, but
+// that's an explicitly pending decision (may become a separate charge later),
+// not a settled inclusive-price claim like GST is — see
+// agent-notes/known-issues.md and orbit-card-content-spec.md.
+// BACKEND NOTE: whatever real order pipeline replaces this mock (see
+// agent-notes/orbit-card-payment-integration.md) must charge/record the GST
+// component explicitly (basePrice/gstAmount/totalAmount, not just one flat
+// "amount") — the buyer's optional GSTIN field only makes sense against a
+// real tax breakup.
+const ORBIT_CARD_BASE_PRICE = 9999;
+const ORBIT_CARD_GST_RATE = 0.18;
+const ORBIT_CARD_GST_AMOUNT = Math.round(ORBIT_CARD_BASE_PRICE * ORBIT_CARD_GST_RATE);
+const ORBIT_CARD_TOTAL_PRICE = ORBIT_CARD_BASE_PRICE + ORBIT_CARD_GST_AMOUNT;
+
+function formatINR(amount: number) {
+  return `₹${amount.toLocaleString('en-IN')}`;
+}
+
 function generateOrderReference() {
   return `BOC-${Date.now().toString(36).toUpperCase()}`;
 }
@@ -456,7 +476,7 @@ export default function OrbitCardCheckoutPage() {
                           data-testid="orbit-card-checkout-pay-button"
                           className="w-full px-6 py-3.5 bg-[#D4FF3F] text-black rounded-full font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(212,255,63,0.5)]"
                         >
-                          Pay — ₹9,999
+                          Pay — {formatINR(ORBIT_CARD_TOTAL_PRICE)}
                         </button>
                       </div>
                     </motion.form>
@@ -482,21 +502,25 @@ export default function OrbitCardCheckoutPage() {
                 <div className="bg-[#121212] border border-white/10 rounded-xl p-6 mb-6">
                   <div className="flex justify-between text-[15px] text-[#F5F5F5] mb-3">
                     <span>Orbit Card — Lifetime Membership</span>
-                    <span>₹9,999</span>
+                    <span>{formatINR(ORBIT_CARD_BASE_PRICE)}</span>
                   </div>
-                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-3">
+                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-4 pb-4 border-b border-white/10">
                     <span>Shipping</span>
                     <span className="text-[#D4FF3F]">Free</span>
                   </div>
-                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-4 pb-4 border-b border-white/10">
+                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-3">
                     <span>Subtotal</span>
-                    <span>₹9,999</span>
+                    <span>{formatINR(ORBIT_CARD_BASE_PRICE)}</span>
+                  </div>
+                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-4 pb-4 border-b border-white/10">
+                    <span>GST (18%)</span>
+                    <span>{formatINR(ORBIT_CARD_GST_AMOUNT)}</span>
                   </div>
                   <div className="flex justify-between text-[18px] font-bold text-[#F5F5F5] mb-1">
                     <span>Total</span>
-                    <span className="text-[#D4FF3F]">₹9,999</span>
+                    <span className="text-[#D4FF3F]">{formatINR(ORBIT_CARD_TOTAL_PRICE)}</span>
                   </div>
-                  <div className="text-[11px] text-[#6B7280]">Inclusive of all taxes</div>
+                  <div className="text-[11px] text-[#6B7280]">GST charged separately, as required by law</div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#A1A1A1] font-medium">
@@ -573,7 +597,19 @@ export default function OrbitCardCheckoutPage() {
               <div className="bg-[#121212] border border-white/10 rounded-xl p-6 text-[13px] text-[#A1A1A1] space-y-3">
                 <div className="flex justify-between">
                   <span>Orbit Card — Lifetime Membership</span>
-                  <span className="text-[#F5F5F5] font-medium">₹9,999</span>
+                  <span className="text-[#F5F5F5] font-medium">{formatINR(ORBIT_CARD_BASE_PRICE)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span className="text-[#D4FF3F] font-medium">Free</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>GST (18%)</span>
+                  <span className="text-[#F5F5F5] font-medium">{formatINR(ORBIT_CARD_GST_AMOUNT)}</span>
+                </div>
+                <div className="flex justify-between pt-3 border-t border-white/10">
+                  <span className="text-[#F5F5F5] font-semibold">Total Paid</span>
+                  <span className="text-[#D4FF3F] font-semibold">{formatINR(ORBIT_CARD_TOTAL_PRICE)}</span>
                 </div>
                 <div className="pt-3 border-t border-white/10">
                   <div className="text-[#F5F5F5] font-medium mb-1">Company &amp; Designation</div>

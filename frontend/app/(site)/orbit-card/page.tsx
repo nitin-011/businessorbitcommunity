@@ -30,7 +30,7 @@ const CORE_BENEFITS = [
   {
     icon: InfinityIcon,
     label: 'Lifetime Premium Membership',
-    sub: 'One-time ₹9,999 · No expiry · No renewal',
+    sub: 'One-time ₹9,999 + 18% GST · No expiry · No renewal',
   },
   {
     icon: KeyRound,
@@ -282,7 +282,13 @@ export default function OrbitCardPage() {
             </ul>
           </motion.div>
 
-          {/* PRICING */}
+          {/* PRICING — updated 2026-08-07: GST (18%) is charged over and above
+              this ₹9,999 base price, not baked into it. Shipping stays "Free"
+              for now, but that's an explicitly pending decision, not settled
+              like GST is — see agent-notes/known-issues.md before changing
+              either figure. The exact itemized total (base + GST) is computed
+              and shown at checkout, not duplicated here as a hardcoded number
+              — this headline is deliberately the base "sticker price" only. */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -294,7 +300,7 @@ export default function OrbitCardPage() {
             <div className="text-[13px] text-[#6B7280] font-medium mb-2">One-time payment</div>
             <div className="text-[40px] font-bold text-[#111111] leading-none mb-1">₹9,999</div>
             <div className="text-[14px] text-[#6B7280] mb-1">Lifetime access · No expiry · No renewal</div>
-            <div className="text-[12px] text-[#9CA3AF] mb-8">Inclusive of all taxes · Free shipping</div>
+            <div className="text-[12px] text-[#9CA3AF] mb-8">+ 18% GST · Free shipping</div>
 
             <Link
               href="/orbit-card/checkout"

@@ -5,38 +5,6 @@ if (config.sendgridApiKey) {
   sgMail.setApiKey(config.sendgridApiKey);
 }
 
-export const sendOTPEmail = async (to: string, otp: string): Promise<void> => {
-  if (!config.sendgridApiKey) {
-    console.log('⚠️ SendGrid not configured. OTP Email would be sent to:', to, 'OTP:', otp);
-    return;
-  }
-
-  const msg = {
-    to,
-    from: config.senderEmail,
-    subject: 'Verify Your Email - Business Orbit',
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <h2 style="color: #000;">Email Verification</h2>
-        <p>Your OTP for email verification is:</p>
-        <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
-          ${otp}
-        </div>
-        <p>This OTP will expire in 10 minutes.</p>
-        <p style="color: #666; font-size: 14px; margin-top: 30px;">If you didn't request this, please ignore this email.</p>
-      </div>
-    `,
-  };
-
-  try {
-    await sgMail.send(msg);
-    console.log('✅ OTP email sent to:', to);
-  } catch (error) {
-    console.error('❌ Error sending OTP email:', error);
-    throw new Error('Failed to send OTP email');
-  }
-};
-
 export const sendWelcomeEmail = async (to: string, name: string): Promise<void> => {
   if (!config.sendgridApiKey) {
     console.log('⚠️ SendGrid not configured. Welcome Email would be sent to:', to);

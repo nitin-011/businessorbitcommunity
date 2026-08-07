@@ -1,16 +1,22 @@
 'use client';
 
+// Admin dashboard now shows Business applications only — the Students tab/stats/table
+// was removed 2026-08-07 (platform is founder-only, no path left to create new student
+// applications). The backend /api/admin/students route, adminAPI.getStudents, and the
+// whole /api/student/* apply/OTP/ID-card flow were removed the same day since nothing
+// could reach them anymore. Student.approve/reject and the Student model itself are
+// still intact on the backend (historical approved-student counts still feed the
+// "Approved Members" stat below) — see agent-notes/known-issues.md.
 import { useState } from 'react';
 import { useAdminAuth } from './AuthContext';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminAPI } from '@/lib/api';
-import { LogOut, Users, CheckCircle, XCircle } from 'lucide-react';
+import { LogOut, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AdminPage() {
   const { admin, login, logout } = useAdminAuth();
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
-  const [activeTab, setActiveTab] = useState<'students' | 'business'>('students');
   const queryClient = useQueryClient();
 
   const { data: stats } = useQuery({
@@ -19,33 +25,23 @@ export default function AdminPage() {
     enabled: !!admin,
   });
 
-  const { data: studentsData } = useQuery({
-    queryKey: ['admin-students'],
-    queryFn: () => adminAPI.getStudents(),
-    enabled: !!admin && activeTab === 'students',
-  });
-
   const { data: businessData } = useQuery({
     queryKey: ['admin-business'],
     queryFn: () => adminAPI.getBusiness(),
-    enabled: !!admin && activeTab === 'business',
+    enabled: !!admin,
   });
 
   const approveMutation = useMutation({
-    mutationFn: ({ type, id }: { type: 'student' | 'business'; id: string }) =>
-      adminAPI.approve(type, id),
+    mutationFn: ({ id }: { id: string }) => adminAPI.approve('business', id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-students'] });
       queryClient.invalidateQueries({ queryKey: ['admin-business'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: ({ type, id }: { type: 'student' | 'business'; id: string }) =>
-      adminAPI.reject(type, id),
+    mutationFn: ({ id }: { id: string }) => adminAPI.reject('business', id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-students'] });
       queryClient.invalidateQueries({ queryKey: ['admin-business'] });
       queryClient.invalidateQueries({ queryKey: ['admin-stats'] });
     },
@@ -111,31 +107,11 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-light-bg flex">
-      <div className="w-64 bg-[#0A0A0A] border-r border-border-dark min-h-screen p-6">
+      <div className="w-64 bg-[#0A0A0A] border-r border-border-dark min-h-screen p-6 relative">
         <h2 className="text-2xl font-heading font-bold text-white mb-8">Business Orbit</h2>
-        <div className="space-y-2">
-          <button
-            onClick={() => setActiveTab('students')}
-            className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-              activeTab === 'students' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <Users size={20} className="inline mr-3" />
-            Students
-          </button>
-          <button
-            onClick={() => setActiveTab('business')}
-            className={`w-full text-left px-4 py-3 rounded-lg transition-colors ${
-              activeTab === 'business' ? 'bg-white/10 text-white' : 'text-white/60 hover:text-white'
-            }`}
-          >
-            <Users size={20} className="inline mr-3" />
-            Business
-          </button>
-        </div>
         <button
           onClick={logout}
-          className="w-full mt-auto absolute bottom-6 left-6 right-6 px-4 py-3 text-white/60 hover:text-white transition-colors text-left"
+          className="w-full absolute bottom-6 left-6 right-6 px-4 py-3 text-white/60 hover:text-white transition-colors text-left"
         >
           <LogOut size={20} className="inline mr-3" />
           Logout
@@ -145,19 +121,7 @@ export default function AdminPage() {
       <div className="flex-1 p-8">
         <div className="mb-8">
           <h1 className="text-3xl font-heading font-bold text-black mb-6">Dashboard</h1>
-          <div className="grid grid-cols-4 gap-4">
-            <div className="p-6 bg-white border border-border-light rounded-lg">
-              <div className="text-3xl font-heading font-bold text-black mb-2">
-                {stats?.data?.students?.total || 0}
-              </div>
-              <div className="text-black/60">Total Students</div>
-            </div>
-            <div className="p-6 bg-white border border-border-light rounded-lg">
-              <div className="text-3xl font-heading font-bold text-black mb-2">
-                {stats?.data?.students?.pending || 0}
-              </div>
-              <div className="text-black/60">Pending Students</div>
-            </div>
+          <div className="grid grid-cols-2 gap-4">
             <div className="p-6 bg-white border border-border-light rounded-lg">
               <div className="text-3xl font-heading font-bold text-black mb-2">
                 {stats?.data?.business?.total || 0}
@@ -175,9 +139,7 @@ export default function AdminPage() {
 
         <div className="bg-white border border-border-light rounded-lg overflow-hidden">
           <div className="p-6 border-b border-border-light">
-            <h2 className="text-2xl font-heading font-bold text-black">
-              {activeTab === 'students' ? 'Students' : 'Business Applications'}
-            </h2>
+            <h2 className="text-2xl font-heading font-bold text-black">Business Applications</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -185,92 +147,50 @@ export default function AdminPage() {
                 <tr>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-black">Name</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-black">Email</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">
-                    {activeTab === 'students' ? 'College' : 'Company'}
-                  </th>
+                  <th className="px-6 py-4 text-left text-sm font-semibold text-black">Company</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-black">Status</th>
                   <th className="px-6 py-4 text-left text-sm font-semibold text-black">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-light">
-                {activeTab === 'students' &&
-                  studentsData?.data?.students?.map((student: any) => (
-                    <tr key={student.id}>
-                      <td className="px-6 py-4 text-black">{student.name}</td>
-                      <td className="px-6 py-4 text-black/70 text-sm">{student.email}</td>
-                      <td className="px-6 py-4 text-black/70 text-sm">{student.college}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            student.status === 'approved'
-                              ? 'bg-green-100 text-green-800'
-                              : student.status === 'rejected'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}
+                {businessData?.data?.businesses?.map((business: any) => (
+                  <tr key={business.id}>
+                    <td className="px-6 py-4 text-black">{business.name}</td>
+                    <td className="px-6 py-4 text-black/70 text-sm">{business.email}</td>
+                    <td className="px-6 py-4 text-black/70 text-sm">{business.company}</td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          business.status === 'approved'
+                            ? 'bg-green-100 text-green-800'
+                            : business.status === 'rejected'
+                            ? 'bg-red-100 text-red-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}
+                      >
+                        {business.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => approveMutation.mutate({ id: business.id })}
+                          className="p-2 text-green-600 hover:bg-red-50 rounded transition-colors"
+                          disabled={business.status === 'approved'}
                         >
-                          {student.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => approveMutation.mutate({ type: 'student', id: student.id })}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
-                            disabled={student.status === 'approved'}
-                          >
-                            <CheckCircle size={20} />
-                          </button>
-                          <button
-                            onClick={() => rejectMutation.mutate({ type: 'student', id: student.id })}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                            disabled={student.status === 'rejected'}
-                          >
-                            <XCircle size={20} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                {activeTab === 'business' &&
-                  businessData?.data?.businesses?.map((business: any) => (
-                    <tr key={business.id}>
-                      <td className="px-6 py-4 text-black">{business.name}</td>
-                      <td className="px-6 py-4 text-black/70 text-sm">{business.email}</td>
-                      <td className="px-6 py-4 text-black/70 text-sm">{business.company}</td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            business.status === 'approved'
-                              ? 'bg-green-100 text-green-800'
-                              : business.status === 'rejected'
-                              ? 'bg-red-100 text-red-800'
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}
+                          <CheckCircle size={20} />
+                        </button>
+                        <button
+                          onClick={() => rejectMutation.mutate({ id: business.id })}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                          disabled={business.status === 'rejected'}
                         >
-                          {business.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => approveMutation.mutate({ type: 'business', id: business.id })}
-                            className="p-2 text-green-600 hover:bg-red-50 rounded transition-colors"
-                            disabled={business.status === 'approved'}
-                          >
-                            <CheckCircle size={20} />
-                          </button>
-                          <button
-                            onClick={() => rejectMutation.mutate({ type: 'business', id: business.id })}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
-                            disabled={business.status === 'rejected'}
-                          >
-                            <XCircle size={20} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                          <XCircle size={20} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>

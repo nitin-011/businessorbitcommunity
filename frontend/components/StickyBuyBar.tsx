@@ -54,7 +54,7 @@ export default function StickyBuyBar() {
           >
             <span className="flex flex-col leading-tight">
               <span className="font-bold text-[14px] tracking-wide">Buy Now</span>
-              <span className="text-[11px] font-medium opacity-70">₹9,999 one-time</span>
+              <span className="text-[11px] font-medium opacity-70">₹9,999 + GST</span>
             </span>
             <ArrowRight className="w-[18px] h-[18px] shrink-0 transition-transform duration-300 group-hover:translate-x-[3px]" />
           </Link>
