@@ -9,7 +9,7 @@ import {
   uploadPhoto,
   getMe,
 } from "./controller";
-import { checkoutCard, paymentRedirect } from "./card.controller";
+import { checkoutCard, paymentRedirect, getOrderDetails } from "./card.controller";
 import {
   requireCommunityAuth,
   optionalCommunityAuth,
@@ -43,5 +43,6 @@ router.post(
   checkoutCard as any,
 );
 router.all("/card/payment-status", paymentRedirect as any);
+router.get("/card/order/:orderId", getOrderDetails as any);
 
 export default router;

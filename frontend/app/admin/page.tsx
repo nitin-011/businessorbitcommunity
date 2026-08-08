@@ -14,7 +14,7 @@ import { adminAPI } from '@/lib/api';
 import { LogOut, CheckCircle, XCircle } from 'lucide-react';
 
 export default function AdminPage() {
-  const { admin, login, logout } = useAdminAuth();
+  const { admin, login, logout, isLoading } = useAdminAuth();
   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const queryClient = useQueryClient();
@@ -57,6 +57,14 @@ export default function AdminPage() {
       setLoginError(error.response?.data?.message || "Login failed");
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
   if (!admin) {
     return (

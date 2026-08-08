@@ -28,6 +28,8 @@ export const authAPI = {
   login: (email: string, password: string) =>
     api.post("/auth/login", { email, password }),
   logout: () => api.post("/auth/logout"),
+  getMe: () => api.get("/auth/me"),
+  refresh: () => api.post("/auth/refresh"),
 };
 
 // Admin APIs
@@ -64,4 +66,5 @@ export const communityAPI = {
     email: string;
     phone: string;
   }) => api.post("/community/card/checkout", data),
+  getOrderDetails: (orderId: string) => api.get(`/community/card/order/${orderId}`),
 };

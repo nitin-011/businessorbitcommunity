@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { connectDatabase } from "./config/database";
 import { config } from "./config/env";
-import { seedAdmin } from "./modules/auth/controller";
+
 
 import authRoutes from "./modules/auth/routes";
 import businessRoutes from "./modules/business/routes";

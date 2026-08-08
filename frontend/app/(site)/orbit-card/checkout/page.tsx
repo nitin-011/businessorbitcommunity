@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Bebas_Neue } from "next/font/google";
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import InteractiveSphere from "@/components/InteractiveSphere";
 import OrbitCardVisual from "@/components/OrbitCardVisual";
+import { communityAPI } from "@/lib/api";
 
 const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400" });
 
@@ -128,7 +130,7 @@ function StepIndicator({ step }: { step: "details" | "delivery" }) {
   );
 }
 
-export default function OrbitCardCheckoutPage() {
+function OrbitCardCheckoutContent() {
   // NOTE: this order form is fully mocked end to end — no payment gateway, no
   // backend call, no persistence (not even localStorage), including the
   // "payment" step below, which is a simulated delay, not a real charge.
@@ -151,6 +153,7 @@ export default function OrbitCardCheckoutPage() {
   // category/student option without explicit confirmation; this has flipped
   // back and forth earlier in the project and the current, confirmed state
   // is founder-only.
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("details");
   const [formData, setFormData] = useState({
     name: "",
@@ -172,6 +175,41 @@ export default function OrbitCardCheckoutPage() {
   >("idle");
   const [orderReference, setOrderReference] = useState("");
 
+  useEffect(() => {
+    const paymentStatusParam = searchParams.get("payment");
+    const urlOrderId = searchParams.get("orderId");
+
+    if (paymentStatusParam === "success" && urlOrderId) {
+      setStep("payment");
+      setPaymentStatus("processing");
+      
+      communityAPI.getOrderDetails(urlOrderId)
+        .then((res) => {
+          const order = res.data.data;
+          const [company, designation] = (order.companyAndDesignation || "").split(" — ");
+          setFormData((prev) => ({
+            ...prev,
+            name: order.fullName,
+            email: order.email,
+            phone: order.phone,
+            addressLine1: order.shippingAddress,
+            company: company || "",
+            designation: designation || "",
+          }));
+          setOrderReference(urlOrderId);
+          setPaymentStatus("idle");
+          setStep("confirmation");
+        })
+        .catch((err) => {
+          console.error("Error fetching order details:", err);
+          setPaymentStatus("error");
+        });
+    } else if (paymentStatusParam === "failed" || paymentStatusParam === "error" || paymentStatusParam === "error_missing_order_id" || paymentStatusParam === "error_provider_unavailable") {
+      setStep("payment");
+      setPaymentStatus("error");
+    }
+  }, [searchParams]);
+
   // Single combined "Company — Designation" line for the card visual, built
   // from the two clean fields rather than trusting free-typed formatting.
   // Falls back gracefully if only one of the two is filled in yet.
@@ -184,17 +222,35 @@ export default function OrbitCardCheckoutPage() {
     setStep("delivery");
   };
 
-  const handleDeliverySubmit = (e: React.FormEvent) => {
+  const handleDeliverySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStep("payment");
     setPaymentStatus("processing");
     try {
-      setTimeout(() => {
-        setOrderReference(generateOrderReference());
-        setPaymentStatus("idle");
-        setStep("confirmation");
-      }, 1800);
-    } catch {
+      const shippingAddress = [
+        formData.addressLine1,
+        formData.addressLine2,
+        formData.landmark,
+        `${formData.city}, ${formData.state} ${formData.pincode}`,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const res = await communityAPI.checkoutCard({
+        shippingAddress,
+        fullName: formData.name,
+        companyAndDesignation: cardDesignation,
+        email: formData.email,
+        phone: formData.phone,
+      });
+
+      if (res.data.success && res.data.data.paymentUrl) {
+        window.location.href = res.data.data.paymentUrl;
+      } else {
+        setPaymentStatus("error");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
       setPaymentStatus("error");
     }
   };
@@ -697,16 +753,24 @@ export default function OrbitCardCheckoutPage() {
             className="relative z-10 max-w-md mx-auto px-6 text-center py-24"
           >
             {paymentStatus === "error" ? (
-              <div
-                data-testid="orbit-card-checkout-error"
-                className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-start gap-2 text-left"
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>
-                  Something went wrong processing your payment. Please try
-                  again.
-                </span>
-              </div>
+              <>
+                <div
+                  data-testid="orbit-card-checkout-error"
+                  className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-start gap-2 text-left"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>
+                    Something went wrong processing your payment. Please try
+                    again.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setStep("delivery")}
+                  className="mt-6 w-full px-6 py-3.5 bg-[#D4FF3F] text-black rounded-full font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(212,255,63,0.5)]"
+                >
+                  Go Back &amp; Try Again
+                </button>
+              </>
             ) : (
               <>
                 <Loader2 className="w-10 h-10 text-[#D4FF3F] animate-spin mx-auto mb-6" />
@@ -810,5 +874,17 @@ export default function OrbitCardCheckoutPage() {
         )}
       </div>
     </>
+  );
+}
+
+export default function OrbitCardCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#121212] flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-[#D4FF3F] animate-spin" />
+      </div>
+    }>
+      <OrbitCardCheckoutContent />
+    </Suspense>
   );
 }

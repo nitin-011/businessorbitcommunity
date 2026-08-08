@@ -10,15 +10,6 @@ import crypto from "crypto";
 
 export const getStats = async (req: Request, res: Response): Promise<void> => {
   try {
-    const totalStudents = await Student.countDocuments();
-    const pendingStudents = await Student.countDocuments({ status: "pending" });
-    const approvedStudents = await Student.countDocuments({
-      status: "approved",
-    });
-    const rejectedStudents = await Student.countDocuments({
-      status: "rejected",
-    });
-
     const totalBusiness = await Business.countDocuments();
     const pendingBusiness = await Business.countDocuments({
       status: "pending",
@@ -31,19 +22,13 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
     });
 
     res.json({
-      students: {
-        total: totalStudents,
-        pending: pendingStudents,
-        approved: approvedStudents,
-        rejected: rejectedStudents,
-      },
       business: {
         total: totalBusiness,
         pending: pendingBusiness,
         approved: approvedBusiness,
         rejected: rejectedBusiness,
       },
-      totalMembers: approvedStudents + approvedBusiness,
+      totalMembers: approvedBusiness,
     });
   } catch (error) {
     console.error("Get stats error:", error);
@@ -60,10 +45,11 @@ export const getBusiness = async (req: Request, res: Response): Promise<void> =>
       query.status = status;
     }
     if (search) {
+      const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { company: { $regex: search, $options: "i" } },
+        { name: { $regex: safeSearch, $options: "i" } },
+        { email: { $regex: safeSearch, $options: "i" } },
+        { company: { $regex: safeSearch, $options: "i" } },
       ];
     }
 
@@ -102,64 +88,45 @@ export const approve = async (req: Request, res: Response): Promise<void> => {
   try {
     const { type, id } = req.params;
 
-    if (type === "student") {
-      const student = await Student.findById(id);
-      if (!student) {
-        res.status(404).json({ message: "Student not found" });
-        return;
-      }
-
-      student.status = "approved";
-      await student.save();
-
-      // Create community member
-      const rawPassword = crypto.randomBytes(6).toString("hex");
-      const hashedPassword = await bcrypt.hash(rawPassword, 10);
-      await CommunityMember.create({
-        name: student.name,
-        email: student.email,
-        role: `${student.course} at ${student.college}`,
-        password: hashedPassword,
-        status: "active",
-      });
-
-      // Send email (rawPassword should be included, for now handled by logging)
-      console.log(
-        `Created student community member. Email: ${student.email}, Password: ${rawPassword}`,
-      );
-      await sendApprovalEmail(student.email, student.name, "student");
-
-      res.json({ message: "Student approved successfully" });
-    } else if (type === "business") {
-      const business = await Business.findById(id);
-      if (!business) {
-        res.status(404).json({ message: "Business not found" });
-        return;
-      }
-
-      business.status = "approved";
-      await business.save();
-
-      // Create community member
-      const rawPassword = crypto.randomBytes(6).toString("hex");
-      const hashedPassword = await bcrypt.hash(rawPassword, 10);
-      await CommunityMember.create({
-        name: business.name,
-        email: business.email,
-        role: `${business.role} at ${business.company}`,
-        password: hashedPassword,
-        status: "active",
-      });
-
-      console.log(
-        `Created business community member. Email: ${business.email}, Password: ${rawPassword}`,
-      );
-      await sendApprovalEmail(business.email, business.name, "business");
-
-      res.json({ message: "Business approved successfully" });
-    } else {
+    if (type !== "business") {
       res.status(400).json({ message: "Invalid type" });
+      return;
     }
+
+    const business = await Business.findById(id);
+    if (!business) {
+      res.status(404).json({ message: "Business not found" });
+      return;
+    }
+
+    if (business.status === "approved") {
+      res.status(400).json({ message: "Business is already approved" });
+      return;
+    }
+
+    business.status = "approved";
+    await business.save();
+
+    // Create community member
+    const rawPassword = crypto.randomBytes(6).toString("hex");
+    const hashedPassword = await bcrypt.hash(rawPassword, 10);
+    await CommunityMember.create({
+      name: business.name,
+      email: business.email,
+      role: `${business.role} at ${business.company}`,
+      password: hashedPassword,
+      status: "active",
+    });
+
+    console.log(
+      `Created business community member. Email: ${business.email}, Password: ${rawPassword}`,
+    );
+    await sendApprovalEmail(business.email, business.name, "business", {
+      username: business.email,
+      password: rawPassword,
+    });
+
+    res.json({ message: "Business approved successfully" });
   } catch (error) {
     console.error("Approve error:", error);
     res.status(500).json({ message: "Internal server error" });
@@ -170,31 +137,33 @@ export const reject = async (req: Request, res: Response): Promise<void> => {
   try {
     const { type, id } = req.params;
 
-    if (type === "student") {
-      const student = await Student.findById(id);
-      if (!student) {
-        res.status(404).json({ message: "Student not found" });
-        return;
-      }
-
-      student.status = "rejected";
-      await student.save();
-
-      res.json({ message: "Student rejected" });
-    } else if (type === "business") {
-      const business = await Business.findById(id);
-      if (!business) {
-        res.status(404).json({ message: "Business not found" });
-        return;
-      }
-
-      business.status = "rejected";
-      await business.save();
-
-      res.json({ message: "Business rejected" });
-    } else {
+    if (type !== "business") {
       res.status(400).json({ message: "Invalid type" });
+      return;
     }
+
+    const business = await Business.findById(id);
+    if (!business) {
+      res.status(404).json({ message: "Business not found" });
+      return;
+    }
+
+    if (business.status === "rejected") {
+      res.status(400).json({ message: "Business is already rejected" });
+      return;
+    }
+
+    const wasApproved = business.status === "approved";
+    business.status = "rejected";
+    await business.save();
+
+    if (wasApproved) {
+      // Revoke access by deleting CommunityMember record
+      await CommunityMember.deleteOne({ email: business.email });
+      console.log(`Deleted community member record for ${business.email} due to status revocation.`);
+    }
+
+    res.json({ message: "Business rejected" });
   } catch (error) {
     console.error("Reject error:", error);
     res.status(500).json({ message: "Internal server error" });
