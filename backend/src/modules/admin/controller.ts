@@ -51,62 +51,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getStudents = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
-  try {
-    const { status, search, page = 1, limit = 20 } = req.query;
-
-    const query: any = {};
-    if (status && status !== "all") {
-      query.status = status;
-    }
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { email: { $regex: search, $options: "i" } },
-        { college: { $regex: search, $options: "i" } },
-      ];
-    }
-
-    const students = await Student.find(query)
-      .sort({ createdAt: -1 })
-      .skip((Number(page) - 1) * Number(limit))
-      .limit(Number(limit))
-      .select("-otp -otpExpiry");
-
-    const total = await Student.countDocuments(query);
-
-    res.json({
-      students: students.map((s) => ({
-        id: s._id.toString(),
-        name: s.name,
-        email: s.email,
-        college: s.college,
-        course: s.course,
-        isEmailVerified: s.isEmailVerified,
-        idCardLink: s.idCardLink,
-        status: s.status,
-        createdAt: s.createdAt,
-      })),
-      pagination: {
-        page: Number(page),
-        limit: Number(limit),
-        total,
-        totalPages: Math.ceil(total / Number(limit)),
-      },
-    });
-  } catch (error) {
-    console.error("Get students error:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
-
-export const getBusiness = async (
-  req: Request,
-  res: Response,
-): Promise<void> => {
+export const getBusiness = async (req: Request, res: Response): Promise<void> => {
   try {
     const { status, search, page = 1, limit = 20 } = req.query;
 

@@ -53,12 +53,8 @@ export default function StickyBuyBar() {
             className="group flex items-center gap-3 pl-6 pr-5 py-4 bg-[#D4FF3F] text-black rounded-full font-glacial shadow-[0_8px_30px_rgba(0,0,0,0.4),0_0_30px_rgba(212,255,63,0.35)] transition-all duration-300 hover:scale-[1.04] hover:shadow-[0_8px_30px_rgba(0,0,0,0.4),0_0_45px_rgba(212,255,63,0.55)]"
           >
             <span className="flex flex-col leading-tight">
-              <span className="font-bold text-[14px] tracking-wide">
-                Buy Now
-              </span>
-              <span className="text-[11px] font-medium opacity-70">
-                ₹9,999 one-time
-              </span>
+              <span className="font-bold text-[14px] tracking-wide">Buy Now</span>
+              <span className="text-[11px] font-medium opacity-70">₹9,999 + GST</span>
             </span>
             <ArrowRight className="w-[18px] h-[18px] shrink-0 transition-transform duration-300 group-hover:translate-x-[3px]" />
           </Link>

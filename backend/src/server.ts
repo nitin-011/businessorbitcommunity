@@ -4,9 +4,9 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import { connectDatabase } from "./config/database";
 import { config } from "./config/env";
+import { seedAdmin } from "./modules/auth/controller";
 
 import authRoutes from "./modules/auth/routes";
-import studentRoutes from "./modules/student/routes";
 import businessRoutes from "./modules/business/routes";
 import adminRoutes from "./modules/admin/routes";
 import communityRoutes from "./modules/community/routes";
@@ -52,7 +52,6 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRoutes);
-app.use("/api/student", studentRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/community", communityRoutes);

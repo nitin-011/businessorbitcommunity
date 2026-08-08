@@ -33,7 +33,6 @@ export const authAPI = {
 // Admin APIs
 export const adminAPI = {
   getStats: () => api.get("/admin/stats"),
-  getStudents: (params?: any) => api.get("/admin/students", { params }),
   getBusiness: (params?: any) => api.get("/admin/business", { params }),
   approve: (type: "student" | "business", id: string) =>
     api.patch(`/admin/approve/${type}/${id}`),
