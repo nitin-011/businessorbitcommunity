@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { authAPI } from "@/lib/api";
 
 interface Admin {
@@ -21,7 +21,35 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const initAuth = async () => {
+      try {
+        const res = await authAPI.getMe();
+        if (isMounted) setAdmin(res.data.admin);
+      } catch (err: any) {
+        if (err.response?.status === 401) {
+          try {
+            await authAPI.refresh();
+            const res = await authAPI.getMe();
+            if (isMounted) setAdmin(res.data.admin);
+          } catch (refreshErr) {
+            if (isMounted) setAdmin(null);
+          }
+        } else {
+          if (isMounted) setAdmin(null);
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    initAuth();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const login = async (email: string, password: string) => {
     try {

@@ -1,7 +1,6 @@
 import { Router } from "express";
 import {
   getStats,
-  getStudents,
   getBusiness,
   approve,
   reject,
@@ -17,7 +16,6 @@ const router = Router();
 router.use(authMiddleware);
 
 router.get("/stats", getStats);
-router.get("/students", getStudents);
 router.get("/business", getBusiness);
 router.patch("/approve/:type/:id", approve);
 router.patch("/reject/:type/:id", reject);

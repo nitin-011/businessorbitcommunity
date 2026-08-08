@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import Providers from "./providers";
 
 export const metadata: Metadata = {
@@ -10,6 +8,9 @@ export const metadata: Metadata = {
     "Connect with high-quality professionals, access exclusive opportunities, and grow your network.",
 };
 
+// Navbar/Footer deliberately live in app/(site)/layout.tsx, not here — this root
+// layout has to stay neutral so /admin (outside the (site) route group) doesn't
+// inherit the public marketing chrome. See app/(site)/layout.tsx.
 export default function RootLayout({
   children,
 }: {
@@ -18,11 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>
-          <Navbar />
-          {children}
-          <Footer />
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

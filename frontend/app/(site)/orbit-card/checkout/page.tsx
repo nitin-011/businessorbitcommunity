@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Bebas_Neue } from "next/font/google";
@@ -13,6 +14,7 @@ import {
 } from "lucide-react";
 import InteractiveSphere from "@/components/InteractiveSphere";
 import OrbitCardVisual from "@/components/OrbitCardVisual";
+import { communityAPI } from "@/lib/api";
 
 const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400" });
 
@@ -65,6 +67,26 @@ const INDIAN_STATES = [
 
 type Step = "details" | "delivery" | "payment" | "confirmation";
 
+// Pricing (updated 2026-08-07): GST is charged over and above the ₹9,999 base
+// price, not baked into it — do not go back to an "inclusive of all taxes"
+// framing without explicit confirmation. Shipping stays "Free" for now, but
+// that's an explicitly pending decision (may become a separate charge later),
+// not a settled inclusive-price claim like GST is — see
+// agent-notes/known-issues.md and orbit-card-content-spec.md.
+// BACKEND NOTE: whatever real order pipeline replaces this mock (see
+// agent-notes/orbit-card-payment-integration.md) must charge/record the GST
+// component explicitly (basePrice/gstAmount/totalAmount, not just one flat
+// "amount") — the buyer's optional GSTIN field only makes sense against a
+// real tax breakup.
+const ORBIT_CARD_BASE_PRICE = 9999;
+const ORBIT_CARD_GST_RATE = 0.18;
+const ORBIT_CARD_GST_AMOUNT = Math.round(ORBIT_CARD_BASE_PRICE * ORBIT_CARD_GST_RATE);
+const ORBIT_CARD_TOTAL_PRICE = ORBIT_CARD_BASE_PRICE + ORBIT_CARD_GST_AMOUNT;
+
+function formatINR(amount: number) {
+  return `₹${amount.toLocaleString('en-IN')}`;
+}
+
 function generateOrderReference() {
   return `BOC-${Date.now().toString(36).toUpperCase()}`;
 }
@@ -108,7 +130,7 @@ function StepIndicator({ step }: { step: "details" | "delivery" }) {
   );
 }
 
-export default function OrbitCardCheckoutPage() {
+function OrbitCardCheckoutContent() {
   // NOTE: this order form is fully mocked end to end — no payment gateway, no
   // backend call, no persistence (not even localStorage), including the
   // "payment" step below, which is a simulated delay, not a real charge.
@@ -131,6 +153,7 @@ export default function OrbitCardCheckoutPage() {
   // category/student option without explicit confirmation; this has flipped
   // back and forth earlier in the project and the current, confirmed state
   // is founder-only.
+  const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("details");
   const [formData, setFormData] = useState({
     name: "",
@@ -152,6 +175,41 @@ export default function OrbitCardCheckoutPage() {
   >("idle");
   const [orderReference, setOrderReference] = useState("");
 
+  useEffect(() => {
+    const paymentStatusParam = searchParams.get("payment");
+    const urlOrderId = searchParams.get("orderId");
+
+    if (paymentStatusParam === "success" && urlOrderId) {
+      setStep("payment");
+      setPaymentStatus("processing");
+      
+      communityAPI.getOrderDetails(urlOrderId)
+        .then((res) => {
+          const order = res.data.data;
+          const [company, designation] = (order.companyAndDesignation || "").split(" — ");
+          setFormData((prev) => ({
+            ...prev,
+            name: order.fullName,
+            email: order.email,
+            phone: order.phone,
+            addressLine1: order.shippingAddress,
+            company: company || "",
+            designation: designation || "",
+          }));
+          setOrderReference(urlOrderId);
+          setPaymentStatus("idle");
+          setStep("confirmation");
+        })
+        .catch((err) => {
+          console.error("Error fetching order details:", err);
+          setPaymentStatus("error");
+        });
+    } else if (paymentStatusParam === "failed" || paymentStatusParam === "error" || paymentStatusParam === "error_missing_order_id" || paymentStatusParam === "error_provider_unavailable") {
+      setStep("payment");
+      setPaymentStatus("error");
+    }
+  }, [searchParams]);
+
   // Single combined "Company — Designation" line for the card visual, built
   // from the two clean fields rather than trusting free-typed formatting.
   // Falls back gracefully if only one of the two is filled in yet.
@@ -164,17 +222,35 @@ export default function OrbitCardCheckoutPage() {
     setStep("delivery");
   };
 
-  const handleDeliverySubmit = (e: React.FormEvent) => {
+  const handleDeliverySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStep("payment");
     setPaymentStatus("processing");
     try {
-      setTimeout(() => {
-        setOrderReference(generateOrderReference());
-        setPaymentStatus("idle");
-        setStep("confirmation");
-      }, 1800);
-    } catch {
+      const shippingAddress = [
+        formData.addressLine1,
+        formData.addressLine2,
+        formData.landmark,
+        `${formData.city}, ${formData.state} ${formData.pincode}`,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      const res = await communityAPI.checkoutCard({
+        shippingAddress,
+        fullName: formData.name,
+        companyAndDesignation: cardDesignation,
+        email: formData.email,
+        phone: formData.phone,
+      });
+
+      if (res.data.success && res.data.data.paymentUrl) {
+        window.location.href = res.data.data.paymentUrl;
+      } else {
+        setPaymentStatus("error");
+      }
+    } catch (error) {
+      console.error("Checkout error:", error);
       setPaymentStatus("error");
     }
   };
@@ -609,7 +685,7 @@ export default function OrbitCardCheckoutPage() {
                           data-testid="orbit-card-checkout-pay-button"
                           className="w-full px-6 py-3.5 bg-[#D4FF3F] text-black rounded-full font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(212,255,63,0.5)]"
                         >
-                          Pay — ₹9,999
+                          Pay — {formatINR(ORBIT_CARD_TOTAL_PRICE)}
                         </button>
                       </div>
                     </motion.form>
@@ -635,23 +711,25 @@ export default function OrbitCardCheckoutPage() {
                 <div className="bg-[#121212] border border-white/10 rounded-xl p-6 mb-6">
                   <div className="flex justify-between text-[15px] text-[#F5F5F5] mb-3">
                     <span>Orbit Card — Lifetime Membership</span>
-                    <span>₹9,999</span>
+                    <span>{formatINR(ORBIT_CARD_BASE_PRICE)}</span>
                   </div>
-                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-3">
+                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-4 pb-4 border-b border-white/10">
                     <span>Shipping</span>
                     <span className="text-[#D4FF3F]">Free</span>
                   </div>
-                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-4 pb-4 border-b border-white/10">
+                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-3">
                     <span>Subtotal</span>
-                    <span>₹9,999</span>
+                    <span>{formatINR(ORBIT_CARD_BASE_PRICE)}</span>
+                  </div>
+                  <div className="flex justify-between text-[15px] text-[#A1A1A1] mb-4 pb-4 border-b border-white/10">
+                    <span>GST (18%)</span>
+                    <span>{formatINR(ORBIT_CARD_GST_AMOUNT)}</span>
                   </div>
                   <div className="flex justify-between text-[18px] font-bold text-[#F5F5F5] mb-1">
                     <span>Total</span>
-                    <span className="text-[#D4FF3F]">₹9,999</span>
+                    <span className="text-[#D4FF3F]">{formatINR(ORBIT_CARD_TOTAL_PRICE)}</span>
                   </div>
-                  <div className="text-[11px] text-[#6B7280]">
-                    Inclusive of all taxes
-                  </div>
+                  <div className="text-[11px] text-[#6B7280]">GST charged separately, as required by law</div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#A1A1A1] font-medium">
@@ -675,16 +753,24 @@ export default function OrbitCardCheckoutPage() {
             className="relative z-10 max-w-md mx-auto px-6 text-center py-24"
           >
             {paymentStatus === "error" ? (
-              <div
-                data-testid="orbit-card-checkout-error"
-                className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-start gap-2 text-left"
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>
-                  Something went wrong processing your payment. Please try
-                  again.
-                </span>
-              </div>
+              <>
+                <div
+                  data-testid="orbit-card-checkout-error"
+                  className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 text-sm flex items-start gap-2 text-left"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>
+                    Something went wrong processing your payment. Please try
+                    again.
+                  </span>
+                </div>
+                <button
+                  onClick={() => setStep("delivery")}
+                  className="mt-6 w-full px-6 py-3.5 bg-[#D4FF3F] text-black rounded-full font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(212,255,63,0.5)]"
+                >
+                  Go Back &amp; Try Again
+                </button>
+              </>
             ) : (
               <>
                 <Loader2 className="w-10 h-10 text-[#D4FF3F] animate-spin mx-auto mb-6" />
@@ -740,7 +826,19 @@ export default function OrbitCardCheckoutPage() {
               <div className="bg-[#121212] border border-white/10 rounded-xl p-6 text-[13px] text-[#A1A1A1] space-y-3">
                 <div className="flex justify-between">
                   <span>Orbit Card — Lifetime Membership</span>
-                  <span className="text-[#F5F5F5] font-medium">₹9,999</span>
+                  <span className="text-[#F5F5F5] font-medium">{formatINR(ORBIT_CARD_BASE_PRICE)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span className="text-[#D4FF3F] font-medium">Free</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>GST (18%)</span>
+                  <span className="text-[#F5F5F5] font-medium">{formatINR(ORBIT_CARD_GST_AMOUNT)}</span>
+                </div>
+                <div className="flex justify-between pt-3 border-t border-white/10">
+                  <span className="text-[#F5F5F5] font-semibold">Total Paid</span>
+                  <span className="text-[#D4FF3F] font-semibold">{formatINR(ORBIT_CARD_TOTAL_PRICE)}</span>
                 </div>
                 <div className="pt-3 border-t border-white/10">
                   <div className="text-[#F5F5F5] font-medium mb-1">
@@ -776,5 +874,17 @@ export default function OrbitCardCheckoutPage() {
         )}
       </div>
     </>
+  );
+}
+
+export default function OrbitCardCheckoutPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#121212] flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-[#D4FF3F] animate-spin" />
+      </div>
+    }>
+      <OrbitCardCheckoutContent />
+    </Suspense>
   );
 }

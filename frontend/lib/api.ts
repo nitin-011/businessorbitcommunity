@@ -28,12 +28,13 @@ export const authAPI = {
   login: (email: string, password: string) =>
     api.post("/auth/login", { email, password }),
   logout: () => api.post("/auth/logout"),
+  getMe: () => api.get("/auth/me"),
+  refresh: () => api.post("/auth/refresh"),
 };
 
 // Admin APIs
 export const adminAPI = {
   getStats: () => api.get("/admin/stats"),
-  getStudents: (params?: any) => api.get("/admin/students", { params }),
   getBusiness: (params?: any) => api.get("/admin/business", { params }),
   approve: (type: "student" | "business", id: string) =>
     api.patch(`/admin/approve/${type}/${id}`),
@@ -65,4 +66,5 @@ export const communityAPI = {
     email: string;
     phone: string;
   }) => api.post("/community/card/checkout", data),
+  getOrderDetails: (orderId: string) => api.get(`/community/card/order/${orderId}`),
 };

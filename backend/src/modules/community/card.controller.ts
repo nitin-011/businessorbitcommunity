@@ -45,7 +45,7 @@ export const checkoutCard = async (req: AuthRequest, res: Response) => {
     }
 
     const transactionId = `T${Date.now()}${Math.floor(Math.random() * 1000)}`;
-    const amount = 49900; // 499 INR in paise
+    const amount = 1179900; // 11799 INR in paise (9999 + 18% GST)
 
     const order = await OrbitCardOrder.create({
       memberId,
@@ -119,7 +119,7 @@ export const paymentRedirect = async (req: Request, res: Response) => {
         { transactionId: orderId },
         {
           status: "SUCCESS",
-          providerReferenceId: response.transactionId || "",
+          providerReferenceId: (response as any).transactionId || "",
         },
       );
       return res.redirect(
@@ -144,5 +144,24 @@ export const paymentRedirect = async (req: Request, res: Response) => {
     return res.redirect(
       `${config.frontendUrl}/orbit-card/checkout?payment=error`,
     );
+  }
+};
+
+export const getOrderDetails = async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.params;
+    if (!orderId) {
+      return res.status(400).json({ success: false, message: "Order ID is required" });
+    }
+
+    const order = await OrbitCardOrder.findOne({ transactionId: orderId });
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    return res.status(200).json({ success: true, data: order });
+  } catch (error) {
+    console.error("Get Order Details Error:", error);
+    return res.status(500).json({ success: false, message: "Server error" });
   }
 };
