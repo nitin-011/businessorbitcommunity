@@ -126,6 +126,16 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+export const logout = async (req: Request, res: Response) => {
+  const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: isSecure,
+    sameSite: isSecure ? "none" : "lax",
+  });
+  return res.status(200).json({ success: true, message: "Logout successful" });
+};
+
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const memberId = req.member?.id;

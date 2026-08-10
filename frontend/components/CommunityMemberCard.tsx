@@ -1,17 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Linkedin, Instagram, Phone, Mail } from "lucide-react";
+import Image from "next/image";
+import { Linkedin, Instagram, Phone, Mail, ChevronDown, ChevronUp } from "lucide-react";
 
-// BACKEND HANDOFF — expected shape for a community member record, once the
-// directory is wired to the real API/database:
+// BACKEND HANDOFF — expected shape for a community member record:
 //   { name, role, bio, linkedin, instagram, phone, email, photoUrl? }
-// - name/role/bio/phone/email: plain strings.
-// - linkedin/instagram: full profile URLs (used directly as href).
-// - photoUrl: optional. When present, it's rendered as the card's photo
-//   (plain <img>, not next/image — see note below). When absent, or if the
-//   URL fails to load, the card falls back to an initials avatar generated
-//   from `name` — no separate "hasPhoto" flag needed on your side.
+// - photoUrl: optional. Cloudinary URLs (res.cloudinary.com) are rendered
+//   via next/image. Any other host silently falls back to an initials avatar.
 export interface CommunityMember {
   name: string;
   role: string;
@@ -30,101 +26,161 @@ function getInitials(name: string) {
   return (first + last).toUpperCase();
 }
 
+/** Only pass URLs from known-safe image hosts to next/image to avoid
+ *  unconfigured-hostname errors (e.g. stale Google Drive URLs). */
+const SAFE_IMAGE_HOSTS = ["res.cloudinary.com"];
+function isSafeImageUrl(url?: string): boolean {
+  if (!url) return false;
+  try {
+    return SAFE_IMAGE_HOSTS.includes(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
+// Bio is clamped to this many lines before "Read more" appears
+const BIO_CLAMP_LINES = 3;
+
 export default function CommunityMemberCard({
   member,
 }: {
   member: CommunityMember;
 }) {
-  // Plain <img> (not next/image) deliberately — the real photo domain isn't
-  // known yet (backend/CDN not wired up), and next/image requires
-  // allowlisting remote domains in next.config.js ahead of time. Swap to
-  // next/image once the real photo host is known, for optimization.
   const [photoFailed, setPhotoFailed] = useState(false);
-  const showPhoto = Boolean(member.photoUrl) && !photoFailed;
+  const [bioExpanded, setBioExpanded] = useState(false);
+  const showPhoto = isSafeImageUrl(member.photoUrl) && !photoFailed;
 
   return (
     <div
       data-testid="community-member-card"
-      className="group flex flex-col sm:flex-row bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-[4px] hover:bg-white/[0.06] hover:border-white/20 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)]"
+      className={`group flex flex-col sm:flex-row bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl transition-all duration-300 hover:-translate-y-[3px] hover:bg-white/[0.06] hover:border-white/20 hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] ${
+        bioExpanded
+          ? "sm:min-h-[260px] sm:h-auto overflow-visible"
+          : "sm:h-[260px] overflow-hidden"
+      }`}
     >
-      {/* Photo panel — real photo when supplied, initials avatar fallback otherwise */}
-      <div className="relative w-full h-64 sm:h-auto sm:w-[340px] shrink-0 self-stretch bg-gradient-to-br from-white/[0.05] to-transparent flex items-center justify-center overflow-hidden sm:border-r border-b sm:border-b-0 border-white/10">
+      {/* ── Photo panel ─────────────────────────────────────────────────────── */}
+      {/* Square on sm+, 56 vw tall strip on mobile */}
+      <div className={`relative w-full h-52 sm:h-full sm:w-[220px] md:w-[240px] lg:w-[260px] shrink-0 bg-gradient-to-br from-white/[0.05] to-transparent flex items-center justify-center overflow-hidden sm:border-r border-b sm:border-b-0 border-white/10 ${
+        bioExpanded ? "rounded-tl-2xl rounded-bl-2xl" : ""
+      }`}>
+        {/* Noise grain */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.05]"
           style={{
             backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
           }}
         />
-        <div className="pointer-events-none absolute -top-10 -right-10 w-40 h-40 bg-[#D4FF3F]/20 blur-3xl rounded-full" />
-        <span className="relative font-glacial font-bold text-[56px] text-[#D4FF3F] tracking-wide">
+        {/* Accent glow */}
+        <div className="pointer-events-none absolute -top-8 -right-8 w-32 h-32 bg-[#D4FF3F]/20 blur-3xl rounded-full" />
+
+        {/* Initials fallback — always rendered beneath the photo */}
+        <span className="relative z-0 font-glacial font-bold text-[52px] text-[#D4FF3F] tracking-wide select-none">
           {getInitials(member.name)}
         </span>
+
+        {/* Photo — object-cover + object-top keeps faces in frame */}
         {showPhoto && (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img
-            src={member.photoUrl}
+          <Image
+            src={member.photoUrl!}
             alt={member.name}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 220px, (max-width: 1024px) 240px, 260px"
+            className="absolute inset-0 z-10 object-cover object-top"
             onError={() => setPhotoFailed(true)}
-            className="absolute inset-0 w-full h-full object-cover"
+            priority={false}
           />
         )}
       </div>
 
-      {/* Content */}
-      <div className="flex-1 p-7 sm:p-9 flex flex-col">
-        <div className="mb-3">
-          <h3 className="font-glacial font-bold text-[24px] text-[#F5F5F5] leading-tight">
+      {/* ── Content ──────────────────────────────────────────────────────────── */}
+      <div className="flex-1 min-w-0 p-5 sm:p-6 flex flex-col overflow-hidden">
+        {/* Name + Role */}
+        <div className="mb-2 min-w-0">
+          <h3 className="font-glacial font-bold text-[20px] sm:text-[22px] text-[#F5F5F5] leading-snug line-clamp-2">
             {member.name}
           </h3>
-          <p className="font-glacial text-[15px] text-[#A1A1A1]">
-            {member.role}
+          <p className="font-glacial text-[13px] text-[#A1A1A1] truncate mt-0.5">
+            {member.role || <span className="italic opacity-50">—</span>}
           </p>
         </div>
 
-        <p className="font-glacial text-[16px] text-[#C4C4C4] leading-[1.7] mb-6 max-w-2xl">
-          {member.bio}
-        </p>
+        {/* Bio with read-more toggle */}
+        <div className="flex-1 min-h-0 mb-3">
+          <p
+            className={`font-glacial text-[14px] text-[#C4C4C4] leading-[1.65] transition-all ${
+              bioExpanded ? "" : "line-clamp-3"
+            }`}
+          >
+            {member.bio || <span className="italic opacity-40">No bio provided.</span>}
+          </p>
+          {/* Only show toggle if bio is long enough to be clamped */}
+          {member.bio && member.bio.length > 120 && (
+            <button
+              onClick={() => setBioExpanded((v) => !v)}
+              className="mt-1 flex items-center gap-1 text-[12px] text-[#D4FF3F]/70 hover:text-[#D4FF3F] transition-colors font-glacial"
+            >
+              {bioExpanded ? (
+                <>Read less <ChevronUp className="w-3 h-3" /></>
+              ) : (
+                <>Read more <ChevronDown className="w-3 h-3" /></>
+              )}
+            </button>
+          )}
+        </div>
 
-        <div className="mt-auto flex flex-wrap items-center justify-between gap-4 pt-5 border-t border-white/10">
-          <div className="flex items-center gap-2">
-            <a
-              href={member.linkedin}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-testid="community-member-linkedin"
-              aria-label={`${member.name} on LinkedIn`}
-              className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#A1A1A1] hover:text-[#F5F5F5] hover:border-[#D4FF3F]/50 transition-colors"
-            >
-              <Linkedin className="w-4 h-4" />
-            </a>
-            <a
-              href={member.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              data-testid="community-member-instagram"
-              aria-label={`${member.name} on Instagram`}
-              className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#A1A1A1] hover:text-[#F5F5F5] hover:border-[#D4FF3F]/50 transition-colors"
-            >
-              <Instagram className="w-4 h-4" />
-            </a>
+        {/* Footer: socials + contact */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10 mt-auto">
+          {/* Social icons */}
+          <div className="flex items-center gap-1.5">
+            {member.linkedin && (
+              <a
+                href={member.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="community-member-linkedin"
+                aria-label={`${member.name} on LinkedIn`}
+                className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#A1A1A1] hover:text-[#F5F5F5] hover:border-[#D4FF3F]/50 transition-colors"
+              >
+                <Linkedin className="w-3.5 h-3.5" />
+              </a>
+            )}
+            {member.instagram && (
+              <a
+                href={member.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                data-testid="community-member-instagram"
+                aria-label={`${member.name} on Instagram`}
+                className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-[#A1A1A1] hover:text-[#F5F5F5] hover:border-[#D4FF3F]/50 transition-colors"
+              >
+                <Instagram className="w-3.5 h-3.5" />
+              </a>
+            )}
           </div>
-          <div className="flex flex-col items-start sm:items-end gap-1">
-            <a
-              href={`tel:${member.phone}`}
-              data-testid="community-member-phone"
-              className="flex items-center gap-1.5 text-[13px] text-[#A1A1A1] hover:text-[#F5F5F5] transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              {member.phone}
-            </a>
-            <a
-              href={`mailto:${member.email}`}
-              data-testid="community-member-email"
-              className="flex items-center gap-1.5 text-[13px] text-[#A1A1A1] hover:text-[#F5F5F5] transition-colors"
-            >
-              <Mail className="w-3.5 h-3.5" />
-              {member.email}
-            </a>
+
+          {/* Contact details */}
+          <div className="flex flex-col items-start sm:items-end gap-0.5">
+            {member.phone && (
+              <a
+                href={`tel:${member.phone}`}
+                data-testid="community-member-phone"
+                className="flex items-center gap-1.5 text-[12px] text-[#A1A1A1] hover:text-[#F5F5F5] transition-colors"
+              >
+                <Phone className="w-3 h-3 shrink-0" />
+                <span className="truncate max-w-[160px]">{member.phone}</span>
+              </a>
+            )}
+            {member.email && (
+              <a
+                href={`mailto:${member.email}`}
+                data-testid="community-member-email"
+                className="flex items-center gap-1.5 text-[12px] text-[#A1A1A1] hover:text-[#F5F5F5] transition-colors"
+              >
+                <Mail className="w-3 h-3 shrink-0" />
+                <span className="truncate max-w-[160px]">{member.email}</span>
+              </a>
+            )}
           </div>
         </div>
       </div>

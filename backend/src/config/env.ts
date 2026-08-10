@@ -18,6 +18,9 @@ export const config = {
   frontendUrl: process.env.FRONTEND_URL || "http://localhost:3000",
   apiUrl: process.env.API_URL || "http://localhost:8001",
   cloudinaryUrl: process.env.CLOUDINARY_URL || "",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || "",
   phonepeMerchantId:
     process.env.PHONEPE_MERCHANT_ID || "PLACEHOLDER_MERCHANT_ID",
   phonepeClientId: process.env.PHONEPE_CLIENT_ID || "",

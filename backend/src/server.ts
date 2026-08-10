@@ -10,6 +10,7 @@ import authRoutes from "./modules/auth/routes";
 import businessRoutes from "./modules/business/routes";
 import adminRoutes from "./modules/admin/routes";
 import communityRoutes from "./modules/community/routes";
+import uploadRoutes from "./modules/upload/routes";
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ app.use(
       }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
       "Authorization",
@@ -55,6 +56,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/business", businessRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/community", communityRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Health check
 app.get("/api/health", (req: Request, res: Response) => {

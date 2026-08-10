@@ -7,6 +7,7 @@ import {
   sendBulk,
   getOrders,
   exportOrders,
+  getCommunityMembers,
 } from "./controller";
 import { authMiddleware } from "../../middleware/auth";
 
@@ -17,6 +18,7 @@ router.use(authMiddleware);
 
 router.get("/stats", getStats);
 router.get("/business", getBusiness);
+router.get("/community-members", getCommunityMembers);
 router.patch("/approve/:type/:id", approve);
 router.patch("/reject/:type/:id", reject);
 router.post("/bulk-email", sendBulk);

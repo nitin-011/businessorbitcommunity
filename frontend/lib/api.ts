@@ -36,6 +36,7 @@ export const authAPI = {
 export const adminAPI = {
   getStats: () => api.get("/admin/stats"),
   getBusiness: (params?: any) => api.get("/admin/business", { params }),
+  getCommunityMembers: (params?: any) => api.get("/admin/community-members", { params }),
   approve: (type: "student" | "business", id: string) =>
     api.patch(`/admin/approve/${type}/${id}`),
   reject: (type: "student" | "business", id: string) =>
@@ -54,6 +55,7 @@ export const communityAPI = {
   getMembers: (params?: any) => api.get("/community/members", { params }),
   getMe: () => api.get("/community/me"),
   login: (data: any) => api.post("/community/login", data),
+  logout: () => api.post("/community/logout"),
   updateProfile: (data: any) => api.put("/community/profile", data),
   uploadPhoto: (data: FormData) =>
     api.post("/community/profile/photo", data, {
