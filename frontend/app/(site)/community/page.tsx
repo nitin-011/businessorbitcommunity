@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Bebas_Neue } from "next/font/google";
 import { ArrowLeft, Lock, LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -18,22 +18,33 @@ const inputClasses =
   "w-full px-4 py-3 bg-[#FAFAFA] border border-[#E5E7EB] rounded-xl text-[#111111] focus:bg-[#FFFFFF] focus:border-[#D4FF3F] focus:ring-1 focus:ring-[#D4FF3F] focus:outline-none focus:shadow-[0_0_12px_rgba(212,255,63,0.3)] transition-all";
 
 const MemberSkeleton = () => (
-  <div className="bg-[#FFFFFF]/5 border border-[#FFFFFF]/10 rounded-2xl p-6 md:p-8 animate-pulse">
-    <div className="flex items-start gap-4 mb-4">
-      <div className="w-12 h-12 rounded-full bg-white/10" />
-      <div className="space-y-2 flex-1">
+  <div className="flex flex-col sm:flex-row bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden sm:h-[260px] animate-pulse">
+    {/* Photo panel skeleton */}
+    <div className="w-full h-52 sm:h-full sm:w-[220px] md:w-[240px] lg:w-[260px] shrink-0 bg-white/[0.05] sm:border-r border-b sm:border-b-0 border-white/10" />
+    
+    {/* Content skeleton */}
+    <div className="flex-1 p-5 sm:p-6 flex flex-col">
+      <div className="mb-4">
+        <div className="h-6 bg-white/10 rounded w-1/2 mb-2" />
         <div className="h-4 bg-white/10 rounded w-1/3" />
-        <div className="h-3 bg-white/10 rounded w-1/4" />
       </div>
-    </div>
-    <div className="space-y-2 mb-6">
-      <div className="h-3 bg-white/10 rounded w-full" />
-      <div className="h-3 bg-white/10 rounded w-5/6" />
-      <div className="h-3 bg-white/10 rounded w-4/6" />
-    </div>
-    <div className="flex gap-3">
-      <div className="w-8 h-8 rounded bg-white/10" />
-      <div className="w-8 h-8 rounded bg-white/10" />
+      
+      <div className="flex-1 space-y-2 mb-6">
+        <div className="h-4 bg-white/10 rounded w-full" />
+        <div className="h-4 bg-white/10 rounded w-[90%]" />
+        <div className="h-4 bg-white/10 rounded w-[80%]" />
+      </div>
+      
+      <div className="mt-auto flex justify-between items-center pt-3 border-t border-white/10">
+        <div className="flex gap-2">
+          <div className="w-8 h-8 rounded-full bg-white/10" />
+          <div className="w-8 h-8 rounded-full bg-white/10" />
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <div className="h-3 bg-white/10 rounded w-24" />
+          <div className="h-3 bg-white/10 rounded w-32" />
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -43,6 +54,7 @@ export default function CommunityPage() {
     identifier: "",
     password: "",
   });
+  const [loginError, setLoginError] = useState("");
   const [status, setStatus] = useState<
     "login" | "processing" | "directory" | "checking_session"
   >("checking_session");
@@ -60,7 +72,7 @@ export default function CommunityPage() {
     isError,
   } = useQuery({
     queryKey: ["communityMembers"],
-    queryFn: () => communityAPI.getMembers().then((res) => res.data),
+    queryFn: () => communityAPI.getMembers({ limit: 100 }).then((res) => res.data),
     enabled: status === "directory",
   });
 
@@ -70,6 +82,7 @@ export default function CommunityPage() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("processing");
+    setLoginError("");
     try {
       const isEmail = credentials.identifier.includes("@");
       const payload = {
@@ -80,15 +93,23 @@ export default function CommunityPage() {
       };
       await communityAPI.login(payload);
       setStatus("directory");
-    } catch (err) {
-      alert("Login failed. Please check your credentials.");
+    } catch (err: any) {
+      setLoginError(
+        err?.response?.data?.message || "Invalid credentials. Please check and try again."
+      );
       setStatus("login");
     }
   };
 
-  const handleSignOut = () => {
-    setCredentials({ identifier: "", password: "" });
-    setStatus("login");
+  const handleSignOut = async () => {
+    try {
+      await communityAPI.logout();
+    } catch (err) {
+      console.error("Logout failed:", err);
+    } finally {
+      setCredentials({ identifier: "", password: "" });
+      setStatus("login");
+    }
   };
 
   return (
@@ -128,18 +149,26 @@ export default function CommunityPage() {
             </Link>
           </div>
 
-          {status === "checking_session" ? (
-            <div className="flex items-center justify-center min-h-[50vh]">
-              <div className="w-8 h-8 border-2 border-[#D4FF3F] border-t-transparent rounded-full animate-spin" />
-            </div>
-          ) : status !== "directory" ? (
-            <motion.div
-              key="login"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              className="max-w-md mx-auto"
-            >
+          <AnimatePresence mode="wait">
+            {status === "checking_session" ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center justify-center min-h-[50vh]"
+              >
+                <div className="w-8 h-8 border-2 border-[#D4FF3F] border-t-transparent rounded-full animate-spin" />
+              </motion.div>
+            ) : status !== "directory" ? (
+              <motion.div
+                key="login"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+                className="max-w-md mx-auto"
+              >
               <div className="text-center mb-8">
                 <div className="w-12 h-12 rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 flex items-center justify-center mx-auto mb-5">
                   <Lock className="w-5 h-5 text-[#D4FF3F]" />
@@ -154,6 +183,13 @@ export default function CommunityPage() {
                   community.
                 </p>
               </div>
+
+              {/* Inline error banner */}
+              {loginError && (
+                <div className="mb-5 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                  {loginError}
+                </div>
+              )}
 
               <div className="bg-[#FFFFFF] rounded-2xl p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <form
@@ -227,6 +263,7 @@ export default function CommunityPage() {
               key="directory"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4, ease: "easeOut" }}
             >
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
@@ -278,6 +315,7 @@ export default function CommunityPage() {
               </div>
             </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </div>
     </>

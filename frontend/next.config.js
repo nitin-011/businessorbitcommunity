@@ -6,6 +6,7 @@ const nextConfig = {
       "static.prod-images.emergentagent.com",
       "images.unsplash.com",
       "images.pexels.com",
+      "res.cloudinary.com",
     ],
   },
   env: {

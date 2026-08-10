@@ -21,6 +21,8 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
       status: "rejected",
     });
 
+    const totalMembers = await CommunityMember.countDocuments();
+
     res.json({
       business: {
         total: totalBusiness,
@@ -28,7 +30,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
         approved: approvedBusiness,
         rejected: rejectedBusiness,
       },
-      totalMembers: approvedBusiness,
+      totalMembers: totalMembers,
     });
   } catch (error) {
     console.error("Get stats error:", error);
@@ -80,6 +82,50 @@ export const getBusiness = async (req: Request, res: Response): Promise<void> =>
     });
   } catch (error) {
     console.error("Get business error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getCommunityMembers = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { search, page = 1, limit = 20 } = req.query;
+
+    const query: any = {};
+    if (search) {
+      const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      query.$or = [
+        { name: { $regex: safeSearch, $options: "i" } },
+        { email: { $regex: safeSearch, $options: "i" } },
+        { role: { $regex: safeSearch, $options: "i" } },
+      ];
+    }
+
+    const members = await CommunityMember.find(query)
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit))
+      .select("-password"); // Hide password
+
+    const total = await CommunityMember.countDocuments(query);
+
+    res.json({
+      members: members.map((m) => ({
+        id: m._id.toString(),
+        name: m.name,
+        email: m.email,
+        role: m.role,
+        status: m.status,
+        createdAt: m.createdAt,
+      })),
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        totalPages: Math.ceil(total / Number(limit)),
+      },
+    });
+  } catch (error) {
+    console.error("Get community members error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
