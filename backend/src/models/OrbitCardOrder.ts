@@ -1,3 +1,8 @@
+/**
+ * @file OrbitCardOrder.ts
+ * @description Mongoose schema for managing Orbit card orders and transactions.
+ * @architecture References CommunityMember model (memberId); unique index on transactionId.
+ */
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IOrbitCardOrder extends Document {
@@ -35,6 +40,9 @@ const OrbitCardOrderSchema = new Schema<IOrbitCardOrder>(
   { timestamps: true },
 );
 
+/**
+ * @module OrbitCardOrder
+ */
 export const OrbitCardOrder = mongoose.model<IOrbitCardOrder>(
   "OrbitCardOrder",
   OrbitCardOrderSchema,

@@ -73,17 +73,22 @@ if [ "$USE_NGROK" = 1 ]; then
   fi
 
   # Kill any existing ngrok process to avoid session limits on free accounts
-  pkill -f ngrok || true
+  pkill -x ngrok || true
   sleep 1
 
   ngrok http 8001 > /dev/null &
   NGROK_PID=$!
   
   log "Waiting for ngrok to initialize..."
-  sleep 3
   
-  # Fetch the public URL from ngrok's local API
-  NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o '[^"]*$' | grep 'https' | head -n1 || true)
+  # Try to fetch the URL for up to 15 seconds
+  for i in {1..15}; do
+    NGROK_URL=$(curl -s http://localhost:4040/api/tunnels | grep -o '"public_url":"[^"]*' | grep -o '[^"]*$' | grep 'https' | head -n1 || true)
+    if [ -n "$NGROK_URL" ]; then
+      break
+    fi
+    sleep 1
+  done
   
   if [ -z "$NGROK_URL" ]; then
     log "ERROR: Failed to get ngrok URL"

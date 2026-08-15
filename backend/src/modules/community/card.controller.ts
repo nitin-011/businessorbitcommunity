@@ -1,3 +1,8 @@
+/**
+ * @file card.controller.ts
+ * @description Controller for Orbit Card purchase flow, handling checkout initiation and payment verification.
+ * @architecture Integrates with PhonePe SDK for payment processing and manages OrbitCardOrder state transitions based on webhook/redirect callbacks.
+ */
 import { Request, Response } from "express";
 import { OrbitCardOrder } from "../../models/OrbitCardOrder";
 import { config } from "../../config/env";
@@ -26,6 +31,11 @@ try {
   console.warn("Reason:", error?.message || String(error));
 }
 
+/**
+ * @desc    Initialize checkout for an Orbit Card and get the payment redirect URL
+ * @route   POST /api/community/card/checkout
+ * @access  Optional (Community Member)
+ */
 export const checkoutCard = async (req: AuthRequest, res: Response) => {
   try {
     const memberId = req.member?.id || null;
@@ -95,6 +105,11 @@ export const checkoutCard = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * @desc    Handle payment provider redirect, verify order status, and update the database
+ * @route   ALL /api/community/card/payment-status
+ * @access  Public
+ */
 export const paymentRedirect = async (req: Request, res: Response) => {
   try {
     const orderId =
@@ -147,16 +162,25 @@ export const paymentRedirect = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * @desc    Fetch details of a specific Orbit Card order by transaction ID
+ * @route   GET /api/community/card/order/:orderId
+ * @access  Public
+ */
 export const getOrderDetails = async (req: Request, res: Response) => {
   try {
     const { orderId } = req.params;
     if (!orderId) {
-      return res.status(400).json({ success: false, message: "Order ID is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Order ID is required" });
     }
 
     const order = await OrbitCardOrder.findOne({ transactionId: orderId });
     if (!order) {
-      return res.status(404).json({ success: false, message: "Order not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Order not found" });
     }
 
     return res.status(200).json({ success: true, data: order });

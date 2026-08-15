@@ -80,11 +80,13 @@ type Step = "details" | "delivery" | "payment" | "confirmation";
 // real tax breakup.
 const ORBIT_CARD_BASE_PRICE = 9999;
 const ORBIT_CARD_GST_RATE = 0.18;
-const ORBIT_CARD_GST_AMOUNT = Math.round(ORBIT_CARD_BASE_PRICE * ORBIT_CARD_GST_RATE);
+const ORBIT_CARD_GST_AMOUNT = Math.round(
+  ORBIT_CARD_BASE_PRICE * ORBIT_CARD_GST_RATE,
+);
 const ORBIT_CARD_TOTAL_PRICE = ORBIT_CARD_BASE_PRICE + ORBIT_CARD_GST_AMOUNT;
 
 function formatINR(amount: number) {
-  return `₹${amount.toLocaleString('en-IN')}`;
+  return `₹${amount.toLocaleString("en-IN")}`;
 }
 
 function generateOrderReference() {
@@ -182,11 +184,14 @@ function OrbitCardCheckoutContent() {
     if (paymentStatusParam === "success" && urlOrderId) {
       setStep("payment");
       setPaymentStatus("processing");
-      
-      communityAPI.getOrderDetails(urlOrderId)
+
+      communityAPI
+        .getOrderDetails(urlOrderId)
         .then((res) => {
           const order = res.data.data;
-          const [company, designation] = (order.companyAndDesignation || "").split(" — ");
+          const [company, designation] = (
+            order.companyAndDesignation || ""
+          ).split(" — ");
           setFormData((prev) => ({
             ...prev,
             name: order.fullName,
@@ -204,7 +209,12 @@ function OrbitCardCheckoutContent() {
           console.error("Error fetching order details:", err);
           setPaymentStatus("error");
         });
-    } else if (paymentStatusParam === "failed" || paymentStatusParam === "error" || paymentStatusParam === "error_missing_order_id" || paymentStatusParam === "error_provider_unavailable") {
+    } else if (
+      paymentStatusParam === "failed" ||
+      paymentStatusParam === "error" ||
+      paymentStatusParam === "error_missing_order_id" ||
+      paymentStatusParam === "error_provider_unavailable"
+    ) {
       setStep("payment");
       setPaymentStatus("error");
     }
@@ -727,9 +737,13 @@ function OrbitCardCheckoutContent() {
                   </div>
                   <div className="flex justify-between text-[18px] font-bold text-[#F5F5F5] mb-1">
                     <span>Total</span>
-                    <span className="text-[#D4FF3F]">{formatINR(ORBIT_CARD_TOTAL_PRICE)}</span>
+                    <span className="text-[#D4FF3F]">
+                      {formatINR(ORBIT_CARD_TOTAL_PRICE)}
+                    </span>
                   </div>
-                  <div className="text-[11px] text-[#6B7280]">GST charged separately, as required by law</div>
+                  <div className="text-[11px] text-[#6B7280]">
+                    GST charged separately, as required by law
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] text-[#A1A1A1] font-medium">
@@ -826,7 +840,9 @@ function OrbitCardCheckoutContent() {
               <div className="bg-[#121212] border border-white/10 rounded-xl p-6 text-[13px] text-[#A1A1A1] space-y-3">
                 <div className="flex justify-between">
                   <span>Orbit Card — Lifetime Membership</span>
-                  <span className="text-[#F5F5F5] font-medium">{formatINR(ORBIT_CARD_BASE_PRICE)}</span>
+                  <span className="text-[#F5F5F5] font-medium">
+                    {formatINR(ORBIT_CARD_BASE_PRICE)}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
@@ -834,11 +850,17 @@ function OrbitCardCheckoutContent() {
                 </div>
                 <div className="flex justify-between">
                   <span>GST (18%)</span>
-                  <span className="text-[#F5F5F5] font-medium">{formatINR(ORBIT_CARD_GST_AMOUNT)}</span>
+                  <span className="text-[#F5F5F5] font-medium">
+                    {formatINR(ORBIT_CARD_GST_AMOUNT)}
+                  </span>
                 </div>
                 <div className="flex justify-between pt-3 border-t border-white/10">
-                  <span className="text-[#F5F5F5] font-semibold">Total Paid</span>
-                  <span className="text-[#D4FF3F] font-semibold">{formatINR(ORBIT_CARD_TOTAL_PRICE)}</span>
+                  <span className="text-[#F5F5F5] font-semibold">
+                    Total Paid
+                  </span>
+                  <span className="text-[#D4FF3F] font-semibold">
+                    {formatINR(ORBIT_CARD_TOTAL_PRICE)}
+                  </span>
                 </div>
                 <div className="pt-3 border-t border-white/10">
                   <div className="text-[#F5F5F5] font-medium mb-1">
@@ -879,11 +901,13 @@ function OrbitCardCheckoutContent() {
 
 export default function OrbitCardCheckoutPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#121212] flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-[#D4FF3F] animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-b from-[#0A0A0A] to-[#121212] flex items-center justify-center">
+          <Loader2 className="w-10 h-10 text-[#D4FF3F] animate-spin" />
+        </div>
+      }
+    >
       <OrbitCardCheckoutContent />
     </Suspense>
   );

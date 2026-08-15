@@ -1,3 +1,8 @@
+/**
+ * @file CommunityMember.ts
+ * @description Mongoose schema for general community members.
+ * @architecture Unique index on email; sparse unique index on username; tracks active/inactive status.
+ */
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface ICommunityMember extends Document {
@@ -37,6 +42,9 @@ const CommunityMemberSchema = new Schema<ICommunityMember>(
   { timestamps: true },
 );
 
+/**
+ * @module CommunityMember
+ */
 export const CommunityMember = mongoose.model<ICommunityMember>(
   "CommunityMember",
   CommunityMemberSchema,

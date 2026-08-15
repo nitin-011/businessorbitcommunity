@@ -1,12 +1,26 @@
+/**
+ * @file controller.ts
+ * @description Authentication module controllers for admin login, logout, and token refresh.
+ * @architecture Implements the admin auth logic, issuing JWT tokens and enforcing brute force protection using LoginAttempt.
+ */
 import { Request, Response } from "express";
 import { Admin } from "../../models/Admin";
 import { LoginAttempt } from "../../models/LoginAttempt";
 import { hashPassword, verifyPassword } from "../../utils/password";
-import { generateAccessToken, generateRefreshToken, verifyToken } from "../../utils/jwt";
+import {
+  generateAccessToken,
+  generateRefreshToken,
+  verifyToken,
+} from "../../utils/jwt";
 import { config } from "../../config/env";
 import fs from "fs";
 import path from "path";
 
+/**
+ * @desc    Authenticate admin and return access token in cookie
+ * @route   POST /api/auth/login
+ * @access  Public
+ */
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
@@ -46,31 +60,18 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     // Clear failed attempts on successful login
     await LoginAttempt.deleteOne({ identifier });
 
-    const accessToken = generateAccessToken({
-      id: admin._id.toString(),
-      email: admin.email,
-      role: admin.role,
-    });
-
-    const refreshToken = generateRefreshToken({
+    const token = generateAccessToken({
       id: admin._id.toString(),
       email: admin.email,
       role: admin.role,
     });
 
     const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
-    res.cookie("access_token", accessToken, {
+    res.cookie("token", token, {
       httpOnly: true,
       secure: isSecure,
       sameSite: isSecure ? "none" : "lax",
-      maxAge: 15 * 60 * 1000, // 15 minutes
-    });
-
-    res.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      secure: isSecure,
-      sameSite: isSecure ? "none" : "lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days (unified with community)
     });
 
     res.json({
@@ -112,6 +113,11 @@ const incrementFailedAttempts = async (identifier: string): Promise<void> => {
   }
 };
 
+/**
+ * @desc    Log out admin by clearing the access token cookie
+ * @route   POST /api/auth/logout
+ * @access  Public
+ */
 export const logout = async (req: Request, res: Response): Promise<void> => {
   const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
   const cookieOptions = {
@@ -119,11 +125,15 @@ export const logout = async (req: Request, res: Response): Promise<void> => {
     secure: isSecure,
     sameSite: isSecure ? ("none" as const) : ("lax" as const),
   };
-  res.clearCookie("access_token", cookieOptions);
-  res.clearCookie("refresh_token", cookieOptions);
+  res.clearCookie("token", cookieOptions);
   res.json({ message: "Logout successful" });
 };
 
+/**
+ * @desc    Get current authenticated admin's details
+ * @route   GET /api/auth/me
+ * @access  Private
+ */
 export const getMe = async (req: any, res: Response): Promise<void> => {
   try {
     const adminId = req.admin?.id;
@@ -152,9 +162,14 @@ export const getMe = async (req: any, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * @desc    Refresh the admin's access token using the existing valid token
+ * @route   POST /api/auth/refresh
+ * @access  Public
+ */
 export const refresh = async (req: Request, res: Response): Promise<void> => {
   try {
-    const token = req.cookies?.refresh_token;
+    const token = req.cookies?.token;
     if (!token) {
       res.status(401).json({ message: "No refresh token provided" });
       return;
@@ -174,11 +189,11 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
     });
 
     const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
-    res.cookie("access_token", accessToken, {
+    res.cookie("token", accessToken, {
       httpOnly: true,
       secure: isSecure,
       sameSite: isSecure ? "none" : "lax",
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
 
     res.json({ message: "Token refreshed successfully" });

@@ -10,12 +10,19 @@ import axios from "axios";
 const app = express();
 app.use(express.json());
 app.use(cookieParser());
+
 app.use("/api/community", communityRoutes);
 
 describe("Community Routes", () => {
   beforeAll(async () => {
     // Assuming connectDatabase is handled outside or we mock it.
     // For simplicity, we just mock the Mongoose methods.
+    jest.spyOn(CommunityMember, "findById").mockResolvedValue({
+      _id: "507f1f77bcf86cd799439011",
+      email: "test@example.com",
+      status: "active",
+      role: "community",
+    } as any);
   });
 
   afterEach(() => {
@@ -63,9 +70,9 @@ describe("Community Routes", () => {
 
     jest.spyOn(CommunityMember, "findOne").mockResolvedValue(mockMember as any);
     // Note: bcrypt.compare would ideally be mocked, but since we are running npx jest,
-    // we can mock bcrypt.compare here.
-    const bcrypt = require("bcryptjs");
-    jest.spyOn(bcrypt, "compare").mockResolvedValue(true as any);
+    // we can mock verifyPassword here.
+    const passwordUtils = require("../../../utils/password");
+    jest.spyOn(passwordUtils, "verifyPassword").mockResolvedValue(true as any);
 
     const res = await request(app).post("/api/community/login").send({
       email: "test@example.com",

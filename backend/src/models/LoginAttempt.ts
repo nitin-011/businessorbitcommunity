@@ -1,3 +1,8 @@
+/**
+ * @file LoginAttempt.ts
+ * @description Mongoose schema for tracking login attempts and locking accounts.
+ * @architecture Unique index on identifier (e.g., email or username) to track and enforce rate limits.
+ */
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface ILoginAttempt extends Document {
@@ -14,6 +19,9 @@ const LoginAttemptSchema = new Schema<ILoginAttempt>({
   lockedUntil: { type: Date },
 });
 
+/**
+ * @module LoginAttempt
+ */
 export const LoginAttempt = mongoose.model<ILoginAttempt>(
   "LoginAttempt",
   LoginAttemptSchema,

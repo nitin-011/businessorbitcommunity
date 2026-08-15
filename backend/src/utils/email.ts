@@ -1,3 +1,8 @@
+/**
+ * @file email.ts
+ * @description Utility for sending transactional emails via SMTP.
+ * @architecture Wraps nodemailer and provides standardized email templates for community communications.
+ */
 import nodemailer from "nodemailer";
 import { config } from "../config/env";
 
@@ -17,6 +22,11 @@ export interface SendMailOptions {
   html: string;
 }
 
+/**
+ * @desc    Sends a raw email using the configured SMTP transporter
+ * @param   {SendMailOptions} options - The email configuration (to, subject, html)
+ * @returns {Promise<void>} Resolves when the email is sent
+ */
 export const sendMail = async (options: SendMailOptions): Promise<void> => {
   if (!config.smtpUser || !config.smtpPass) {
     console.log("⚠️ SMTP not configured. Email would be sent to:", options.to);
@@ -40,21 +50,12 @@ export const sendMail = async (options: SendMailOptions): Promise<void> => {
   }
 };
 
-export const sendOTPEmail = async (to: string, otp: string): Promise<void> => {
-  const html = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h2 style="color: #000;">Email Verification</h2>
-      <p>Your OTP for email verification is:</p>
-      <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
-        ${otp}
-      </div>
-      <p>This OTP will expire in 10 minutes.</p>
-      <p style="color: #666; font-size: 14px; margin-top: 30px;">If you didn't request this, please ignore this email.</p>
-    </div>
-  `;
-  await sendMail({ to, subject: "Verify Your Email - Business Orbit", html });
-};
-
+/**
+ * @desc    Sends a welcome email to newly registered applicants
+ * @param   {string} to - The recipient's email address
+ * @param   {string} name - The recipient's name
+ * @returns {Promise<void>} Resolves when the welcome email is sent
+ */
 export const sendWelcomeEmail = async (
   to: string,
   name: string,
@@ -83,6 +84,13 @@ export const sendWelcomeEmail = async (
   });
 };
 
+/**
+ * @desc    Sends the same email content to multiple recipients
+ * @param   {string[]} recipients - Array of recipient email addresses
+ * @param   {string} subject - The email subject line
+ * @param   {string} content - The HTML content of the email
+ * @returns {Promise<void>} Resolves when the bulk email is sent
+ */
 export const sendBulkEmail = async (
   recipients: string[],
   subject: string,
@@ -91,6 +99,14 @@ export const sendBulkEmail = async (
   await sendMail({ to: recipients, subject, html: content });
 };
 
+/**
+ * @desc    Sends an approval notification with optional login credentials
+ * @param   {string} to - The recipient's email address
+ * @param   {string} name - The recipient's name
+ * @param   {"student" | "business"} userType - The type of user account approved
+ * @param   {Object} [loginDetails] - Optional generated login credentials
+ * @returns {Promise<void>} Resolves when the approval email is sent
+ */
 export const sendApprovalEmail = async (
   to: string,
   name: string,

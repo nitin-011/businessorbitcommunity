@@ -1,3 +1,9 @@
+/**
+ * @file routes.ts
+ * @description Defines routing for the admin domain.
+ * @architecture Integrates admin controller handlers with Express routing, protected by admin-level authentication.
+ */
+
 import { Router } from "express";
 import {
   getStats,
@@ -27,4 +33,8 @@ router.post("/bulk-email", sendBulk);
 router.get("/orders", getOrders);
 router.get("/orders/export", exportOrders);
 
+/**
+ * @module AdminRoutes
+ * @description Admin routes for business applications, community members, and orders.
+ */
 export default router;
