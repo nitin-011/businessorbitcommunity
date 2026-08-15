@@ -11,7 +11,9 @@
  *   node scripts/upload_profile_photos.js
  */
 
-require("dotenv").config({ path: require("path").resolve(__dirname, "../.env") });
+require("dotenv").config({
+  path: require("path").resolve(__dirname, "../.env"),
+});
 
 const fs = require("fs");
 const path = require("path");
@@ -26,9 +28,17 @@ cloudinary.config({
 });
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-const IMAGES_DIR = path.resolve(
-  "/home/jimfleax/Downloads/Professional Photo/Professional Photo (File responses)"
-);
+const IMAGES_DIR = process.env.IMAGES_DIR || path.resolve(__dirname, "../../Docs/photos");
+try {
+  if (!fs.statSync(IMAGES_DIR).isDirectory()) {
+    console.error(`Images directory is not a directory: ${IMAGES_DIR}`);
+    process.exit(1);
+  }
+  fs.accessSync(IMAGES_DIR, fs.constants.R_OK);
+} catch (err) {
+  console.error(`Images directory not found or not readable: ${IMAGES_DIR}`);
+  process.exit(1);
+}
 const CLOUDINARY_FOLDER = "businessorbit/profiles";
 const MONGO_URL = process.env.MONGO_URL;
 
@@ -36,19 +46,19 @@ const MONGO_URL = process.env.MONGO_URL;
 // Maps the name extracted from the filename → member email in the DB.
 // Names are normalised (lowercase, trimmed) for matching.
 const NAME_TO_EMAIL = {
-  "muskan":                         "truly.muskan007@gmail.com",
-  "sakeena yousuf":                "sakeenayousuf04@gmail.com",
-  "mountain bird bagpackers":       "contact.mountainbirdbagpackers@gmail.com",
-  "sandeep ahluwalia":             "bobwalia@gmail.com",
-  "aman deep":                     "amandeep269054@gmail.com",
-  "ujjwal dhawan":                 "ujjwaldhawan1003@gmail.com",
-  "navpreet singh":                "2713.navi@gmail.com",
-  "radhika":                       "r60921@gmail.com",
-  "asheesh bhalla":                "bhallaasheesh@gmail.com",
-  "dr.shruti avasthi":             "infocometaiinstitute@gmail.com",
-  "akanksha 2352":                 "akanksha.arora@aol.com",
-  "gurvinder singh":               "gurvindersingh1666@gmail.com",
-  "vijay kumar":                   "vijay_mvsb@yahoo.com",
+  muskan: "truly.muskan007@gmail.com",
+  "sakeena yousuf": "sakeenayousuf04@gmail.com",
+  "mountain bird bagpackers": "contact.mountainbirdbagpackers@gmail.com",
+  "sandeep ahluwalia": "bobwalia@gmail.com",
+  "aman deep": "amandeep269054@gmail.com",
+  "ujjwal dhawan": "ujjwaldhawan1003@gmail.com",
+  "navpreet singh": "2713.navi@gmail.com",
+  radhika: "r60921@gmail.com",
+  "asheesh bhalla": "bhallaasheesh@gmail.com",
+  "dr.shruti avasthi": "infocometaiinstitute@gmail.com",
+  "akanksha 2352": "akanksha.arora@aol.com",
+  "gurvinder singh": "gurvindersingh1666@gmail.com",
+  "vijay kumar": "vijay_mvsb@yahoo.com",
 };
 
 // Sonika Sarhadi has no matching member — she will be uploaded but not assigned.
@@ -70,7 +80,10 @@ function extractNameFromFilename(filename) {
   const withoutExt = path.basename(filename, path.extname(filename));
   const dashIdx = withoutExt.lastIndexOf(" - ");
   if (dashIdx === -1) return withoutExt.toLowerCase().trim();
-  return withoutExt.slice(dashIdx + 3).toLowerCase().trim();
+  return withoutExt
+    .slice(dashIdx + 3)
+    .toLowerCase()
+    .trim();
 }
 
 /**
@@ -98,7 +111,7 @@ const CommunityMemberSchema = new mongoose.Schema(
     photoUrl: String,
     status: String,
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const CommunityMember =
@@ -111,9 +124,23 @@ async function main() {
   await mongoose.connect(MONGO_URL);
   console.log("✅ MongoDB connected\n");
 
-  const files = fs.readdirSync(IMAGES_DIR).filter((f) => {
+  let rawFiles;
+  try {
+    rawFiles = fs.readdirSync(IMAGES_DIR);
+  } catch (err) {
+    throw new Error(`Failed to read directory ${IMAGES_DIR}: ${err.message}`);
+  }
+  const files = rawFiles.filter((f) => {
     const ext = path.extname(f).toLowerCase();
-    return [".jpg", ".jpeg", ".png", ".gif", ".webp", ".heic", ".heif"].includes(ext);
+    return [
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".gif",
+      ".webp",
+      ".heic",
+      ".heif",
+    ].includes(ext);
   });
 
   console.log(`📁 Found ${files.length} image(s) in directory:\n`);
@@ -131,10 +158,18 @@ async function main() {
     console.log(`🏷️  Name    : ${nameKey}`);
 
     if (isUnassigned) {
-      console.log(`⚠️  Status  : UNASSIGNED (no matching member — uploading anyway)`);
+      console.log(
+        `⚠️  Status  : UNASSIGNED (no matching member — uploading anyway)`,
+      );
     } else if (!email) {
       console.log(`❌ Status  : No email mapping found — SKIPPING`);
-      results.push({ file, nameKey, email: null, url: null, status: "no_mapping" });
+      results.push({
+        file,
+        nameKey,
+        email: null,
+        url: null,
+        status: "no_mapping",
+      });
       continue;
     } else {
       console.log(`📧 Email   : ${email}`);
@@ -151,19 +186,45 @@ async function main() {
         // Patch the DB record
         const member = await CommunityMember.findOne({ email });
         if (!member) {
-          console.log(`⚠️  DB      : No member found with email ${email} — URL not saved to DB`);
-          results.push({ file, nameKey, email, url, status: "member_not_in_db" });
+          console.log(
+            `⚠️  DB      : No member found with email ${email} — URL not saved to DB`,
+          );
+          results.push({
+            file,
+            nameKey,
+            email,
+            url,
+            status: "member_not_in_db",
+          });
         } else {
-          await CommunityMember.updateOne({ email }, { $set: { photoUrl: url } });
-          console.log(`💾 DB      : photoUrl updated for "${member.name}" (${email})`);
+          await CommunityMember.updateOne(
+            { email },
+            { $set: { photoUrl: url } },
+          );
+          console.log(
+            `💾 DB      : photoUrl updated for "${member.name}" (${email})`,
+          );
           results.push({ file, nameKey, email, url, status: "updated" });
         }
       } else {
-        results.push({ file, nameKey, email: null, url, status: "uploaded_unassigned" });
+        results.push({
+          file,
+          nameKey,
+          email: null,
+          url,
+          status: "uploaded_unassigned",
+        });
       }
     } catch (err) {
       console.error(`❌ Upload failed for ${file}:`, err.message);
-      results.push({ file, nameKey, email, url: null, status: "upload_error", error: err.message });
+      results.push({
+        file,
+        nameKey,
+        email,
+        url: null,
+        status: "upload_error",
+        error: err.message,
+      });
     }
   }
 
@@ -171,11 +232,11 @@ async function main() {
   console.log("📊 SUMMARY");
   console.log("══════════════════════════════════════════\n");
 
-  const updated      = results.filter((r) => r.status === "updated");
-  const unassigned   = results.filter((r) => r.status === "uploaded_unassigned");
-  const notInDb      = results.filter((r) => r.status === "member_not_in_db");
-  const errors       = results.filter((r) => r.status === "upload_error");
-  const noMapping    = results.filter((r) => r.status === "no_mapping");
+  const updated = results.filter((r) => r.status === "updated");
+  const unassigned = results.filter((r) => r.status === "uploaded_unassigned");
+  const notInDb = results.filter((r) => r.status === "member_not_in_db");
+  const errors = results.filter((r) => r.status === "upload_error");
+  const noMapping = results.filter((r) => r.status === "no_mapping");
 
   console.log(`✅ Successfully updated  : ${updated.length}`);
   updated.forEach((r) => console.log(`   • ${r.nameKey} → ${r.url}`));

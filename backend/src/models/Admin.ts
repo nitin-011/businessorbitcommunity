@@ -1,3 +1,8 @@
+/**
+ * @file Admin.ts
+ * @description Mongoose schema for system administrators.
+ * @architecture Unique index on email; no foreign relations.
+ */
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IAdmin extends Document {
@@ -16,4 +21,7 @@ const AdminSchema = new Schema<IAdmin>({
   createdAt: { type: Date, default: Date.now },
 });
 
+/**
+ * @module Admin
+ */
 export const Admin = mongoose.model<IAdmin>("Admin", AdminSchema);

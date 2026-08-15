@@ -1,6 +1,11 @@
+/**
+ * @file controller.ts
+ * @description Community module controllers for managing member profiles, authentication, and directory listing.
+ * @architecture Implements the community-facing logic, authenticating members via JWT, and integrating with Cloudinary for photo uploads.
+ */
 import { Request, Response } from "express";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { verifyPassword } from "../../utils/password";
 import { v2 as cloudinary } from "cloudinary";
 import { CommunityMember } from "../../models/CommunityMember";
 import { config } from "../../config/env";
@@ -10,6 +15,11 @@ cloudinary.config({
   cloudinary_url: config.cloudinaryUrl,
 });
 
+/**
+ * @desc    Get a paginated list of active community members with optional search
+ * @route   GET /api/community/members
+ * @access  Private (Community Member)
+ */
 export const getMembers = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
@@ -59,6 +69,11 @@ export const getMembers = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * @desc    Authenticate a community member using email/username and return a JWT cookie
+ * @route   POST /api/community/login
+ * @access  Public
+ */
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, username, password } = req.body;
@@ -71,8 +86,8 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const query = email
-      ? { email: email.toLowerCase() }
-      : { username: username.toLowerCase() };
+      ? { email: email.trim().toLowerCase() }
+      : { username: username.trim().toLowerCase() };
 
     const member = await CommunityMember.findOne(query);
 
@@ -88,7 +103,7 @@ export const login = async (req: Request, res: Response) => {
         .json({ success: false, message: "Account is inactive" });
     }
 
-    const isMatch = await bcrypt.compare(password, member.password || "");
+    const isMatch = await verifyPassword(password, member.password || "");
     if (!isMatch) {
       return res
         .status(401)
@@ -126,6 +141,11 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * @desc    Log out a community member by clearing the JWT cookie
+ * @route   POST /api/community/logout
+ * @access  Public
+ */
 export const logout = async (req: Request, res: Response) => {
   const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
   res.clearCookie("token", {
@@ -136,6 +156,11 @@ export const logout = async (req: Request, res: Response) => {
   return res.status(200).json({ success: true, message: "Logout successful" });
 };
 
+/**
+ * @desc    Update the authenticated member's profile information
+ * @route   PUT /api/community/profile
+ * @access  Private (Community Member)
+ */
 export const updateProfile = async (req: AuthRequest, res: Response) => {
   try {
     const memberId = req.member?.id;
@@ -165,6 +190,11 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * @desc    Upload and update the authenticated member's profile photo
+ * @route   POST /api/community/profile/photo
+ * @access  Private (Community Member)
+ */
 export const uploadPhoto = async (req: AuthRequest, res: Response) => {
   try {
     const memberId = req.member?.id;
@@ -194,6 +224,11 @@ export const uploadPhoto = async (req: AuthRequest, res: Response) => {
   }
 };
 
+/**
+ * @desc    Get the current authenticated member's profile details
+ * @route   GET /api/community/me
+ * @access  Private (Community Member)
+ */
 export const getMe = async (req: AuthRequest, res: Response) => {
   try {
     const memberId = req.member?.id;

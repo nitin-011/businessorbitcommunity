@@ -1,3 +1,8 @@
+/**
+ * @file controller.ts
+ * @description Admin module controllers for managing businesses, community members, and orbit card orders.
+ * @architecture Implements the admin-facing business logic, interacting with multiple models to fetch stats, approve/reject businesses, and manage orders.
+ */
 import { Request, Response } from "express";
 import { Student } from "../../models/Student";
 import { Business } from "../../models/Business";
@@ -5,9 +10,14 @@ import { sendBulkEmail, sendApprovalEmail } from "../../utils/email";
 import { CommunityMember } from "../../models/CommunityMember";
 import { OrbitCardOrder } from "../../models/OrbitCardOrder";
 import { Parser } from "json2csv";
-import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { hashPassword } from "../../utils/password";
 
+/**
+ * @desc    Get aggregate statistics of businesses and community members
+ * @route   GET /api/admin/stats
+ * @access  Private (Admin)
+ */
 export const getStats = async (req: Request, res: Response): Promise<void> => {
   try {
     const totalBusiness = await Business.countDocuments();
@@ -38,7 +48,15 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export const getBusiness = async (req: Request, res: Response): Promise<void> => {
+/**
+ * @desc    Get a paginated list of businesses with optional status and search filtering
+ * @route   GET /api/admin/business
+ * @access  Private (Admin)
+ */
+export const getBusiness = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const { status, search, page = 1, limit = 20 } = req.query;
 
@@ -47,7 +65,7 @@ export const getBusiness = async (req: Request, res: Response): Promise<void> =>
       query.status = status;
     }
     if (search) {
-      const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
         { name: { $regex: safeSearch, $options: "i" } },
         { email: { $regex: safeSearch, $options: "i" } },
@@ -86,13 +104,21 @@ export const getBusiness = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const getCommunityMembers = async (req: Request, res: Response): Promise<void> => {
+/**
+ * @desc    Get a paginated list of community members with optional search filtering
+ * @route   GET /api/admin/community-members
+ * @access  Private (Admin)
+ */
+export const getCommunityMembers = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
   try {
     const { search, page = 1, limit = 20 } = req.query;
 
     const query: any = {};
     if (search) {
-      const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
         { name: { $regex: safeSearch, $options: "i" } },
         { email: { $regex: safeSearch, $options: "i" } },
@@ -130,6 +156,11 @@ export const getCommunityMembers = async (req: Request, res: Response): Promise<
   }
 };
 
+/**
+ * @desc    Approve a business application and automatically create a community member account
+ * @route   PATCH /api/admin/approve/:type/:id
+ * @access  Private (Admin)
+ */
 export const approve = async (req: Request, res: Response): Promise<void> => {
   try {
     const { type, id } = req.params;
@@ -155,7 +186,7 @@ export const approve = async (req: Request, res: Response): Promise<void> => {
 
     // Create community member
     const rawPassword = crypto.randomBytes(6).toString("hex");
-    const hashedPassword = await bcrypt.hash(rawPassword, 10);
+    const hashedPassword = await hashPassword(rawPassword);
     await CommunityMember.create({
       name: business.name,
       email: business.email,
@@ -179,6 +210,11 @@ export const approve = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * @desc    Reject a business application and revoke community member access if previously approved
+ * @route   PATCH /api/admin/reject/:type/:id
+ * @access  Private (Admin)
+ */
 export const reject = async (req: Request, res: Response): Promise<void> => {
   try {
     const { type, id } = req.params;
@@ -206,7 +242,9 @@ export const reject = async (req: Request, res: Response): Promise<void> => {
     if (wasApproved) {
       // Revoke access by deleting CommunityMember record
       await CommunityMember.deleteOne({ email: business.email });
-      console.log(`Deleted community member record for ${business.email} due to status revocation.`);
+      console.log(
+        `Deleted community member record for ${business.email} due to status revocation.`,
+      );
     }
 
     res.json({ message: "Business rejected" });
@@ -216,6 +254,11 @@ export const reject = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * @desc    Send bulk emails to specified recipients
+ * @route   POST /api/admin/bulk-email
+ * @access  Private (Admin)
+ */
 export const sendBulk = async (req: Request, res: Response): Promise<void> => {
   try {
     const { recipients, subject, content } = req.body;
@@ -239,6 +282,11 @@ export const sendBulk = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * @desc    Get a list of all Orbit Card orders
+ * @route   GET /api/admin/orders
+ * @access  Private (Admin)
+ */
 export const getOrders = async (req: Request, res: Response) => {
   try {
     const orders = await OrbitCardOrder.find()
@@ -251,6 +299,11 @@ export const getOrders = async (req: Request, res: Response) => {
   }
 };
 
+/**
+ * @desc    Export all successful Orbit Card orders to a CSV format
+ * @route   GET /api/admin/orders/export
+ * @access  Private (Admin)
+ */
 export const exportOrders = async (req: Request, res: Response) => {
   try {
     const orders = await OrbitCardOrder.find({ status: "SUCCESS" })

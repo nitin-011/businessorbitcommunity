@@ -29,8 +29,8 @@ const CORE_BENEFITS = [
   },
   {
     icon: InfinityIcon,
-    label: 'Lifetime Premium Membership',
-    sub: 'One-time ₹9,999 + 18% GST · No expiry · No renewal',
+    label: "Lifetime Premium Membership",
+    sub: "One-time ₹9,999 + 18% GST · No expiry · No renewal",
   },
   {
     icon: KeyRound,
@@ -329,10 +329,18 @@ export default function OrbitCardPage() {
             id="pricing"
             className="bg-[#FFFFFF] rounded-2xl p-8 md:p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] text-center"
           >
-            <div className="text-[13px] text-[#6B7280] font-medium mb-2">One-time payment</div>
-            <div className="text-[40px] font-bold text-[#111111] leading-none mb-1">₹9,999</div>
-            <div className="text-[14px] text-[#6B7280] mb-1">Lifetime access · No expiry · No renewal</div>
-            <div className="text-[12px] text-[#9CA3AF] mb-8">+ 18% GST · Free shipping</div>
+            <div className="text-[13px] text-[#6B7280] font-medium mb-2">
+              One-time payment
+            </div>
+            <div className="text-[40px] font-bold text-[#111111] leading-none mb-1">
+              ₹9,999
+            </div>
+            <div className="text-[14px] text-[#6B7280] mb-1">
+              Lifetime access · No expiry · No renewal
+            </div>
+            <div className="text-[12px] text-[#9CA3AF] mb-8">
+              + 18% GST · Free shipping
+            </div>
 
             <Link
               href="/orbit-card/checkout"

@@ -1,9 +1,15 @@
 const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
-mongoose.connect(
-  "mongodb+srv://jimfleax:jimfleax@local.f18dsim.mongodb.net/business_orbit?appName=Local",
-);
+require("dotenv").config({
+  path: require("path").resolve(__dirname, "../../.env"),
+});
+if (!process.env.MONGO_URL) {
+  console.error("Missing MONGO_URL environment variable");
+  process.exit(1);
+}
+
+mongoose.connect(process.env.MONGO_URL);
 
 const OrbitCardOrderSchema = new Schema({}, { strict: false });
 const Order = mongoose.model("OrbitCardOrder", OrbitCardOrderSchema);

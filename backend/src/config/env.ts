@@ -1,7 +1,16 @@
+/**
+ * @file env.ts
+ * @description Centralized environment variable configuration.
+ * @architecture Parses, validates, and exports environment variables as a typed configuration object.
+ */
 import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ * @constant {Object} config
+ * @description Global configuration object containing validated environment variables
+ */
 export const config = {
   port: process.env.PORT || "8001",
   mongoUrl: process.env.MONGO_URL || "mongodb://localhost:27017",
@@ -29,7 +38,18 @@ export const config = {
   phonepeEnv: process.env.PHONEPE_ENV || "UAT",
 };
 
-if (!config.jwtSecret) {
-  console.error("❌ JWT_SECRET is required in .env file");
+config.jwtSecret = config.jwtSecret.trim();
+
+if (!config.jwtSecret || config.jwtSecret === "your_jwt_secret_here") {
+  console.error(
+    "❌ JWT_SECRET is required and must not be the placeholder 'your_jwt_secret_here' in .env file",
+  );
+  process.exit(1);
+}
+
+if (config.jwtSecret.length < 32) {
+  console.error(
+    "❌ JWT_SECRET must be at least 32 characters long for security",
+  );
   process.exit(1);
 }

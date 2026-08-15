@@ -2,7 +2,14 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Linkedin, Instagram, Phone, Mail, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Linkedin,
+  Instagram,
+  Phone,
+  Mail,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 // BACKEND HANDOFF — expected shape for a community member record:
 //   { name, role, bio, linkedin, instagram, phone, email, photoUrl? }
@@ -61,9 +68,11 @@ export default function CommunityMemberCard({
     >
       {/* ── Photo panel ─────────────────────────────────────────────────────── */}
       {/* Square on sm+, 56 vw tall strip on mobile */}
-      <div className={`relative w-full h-52 sm:h-full sm:w-[220px] md:w-[240px] lg:w-[260px] shrink-0 bg-gradient-to-br from-white/[0.05] to-transparent flex items-center justify-center overflow-hidden sm:border-r border-b sm:border-b-0 border-white/10 ${
-        bioExpanded ? "rounded-tl-2xl rounded-bl-2xl" : ""
-      }`}>
+      <div
+        className={`relative w-full h-52 sm:h-full sm:w-[220px] md:w-[240px] lg:w-[260px] shrink-0 bg-gradient-to-br from-white/[0.05] to-transparent flex items-center justify-center overflow-hidden sm:border-r border-b sm:border-b-0 border-white/10 ${
+          bioExpanded ? "rounded-tl-2xl rounded-bl-2xl" : ""
+        }`}
+      >
         {/* Noise grain */}
         <div
           className="pointer-events-none absolute inset-0 opacity-[0.05]"
@@ -112,7 +121,9 @@ export default function CommunityMemberCard({
               bioExpanded ? "" : "line-clamp-3"
             }`}
           >
-            {member.bio || <span className="italic opacity-40">No bio provided.</span>}
+            {member.bio || (
+              <span className="italic opacity-40">No bio provided.</span>
+            )}
           </p>
           {/* Only show toggle if bio is long enough to be clamped */}
           {member.bio && member.bio.length > 120 && (
@@ -121,9 +132,13 @@ export default function CommunityMemberCard({
               className="mt-1 flex items-center gap-1 text-[12px] text-[#D4FF3F]/70 hover:text-[#D4FF3F] transition-colors font-glacial"
             >
               {bioExpanded ? (
-                <>Read less <ChevronUp className="w-3 h-3" /></>
+                <>
+                  Read less <ChevronUp className="w-3 h-3" />
+                </>
               ) : (
-                <>Read more <ChevronDown className="w-3 h-3" /></>
+                <>
+                  Read more <ChevronDown className="w-3 h-3" />
+                </>
               )}
             </button>
           )}

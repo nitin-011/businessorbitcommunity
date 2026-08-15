@@ -10,10 +10,12 @@
  *   node scripts/seed_members.js
  */
 
-require("dotenv").config({ path: require("path").resolve(__dirname, "../.env") });
+require("dotenv").config({
+  path: require("path").resolve(__dirname, "../.env"),
+});
 
 const mongoose = require("mongoose");
-const bcrypt = require("bcryptjs");
+const bcrypt = require("bcrypt");
 const path = require("path");
 const fs = require("fs");
 
@@ -53,19 +55,19 @@ const CLOUDINARY_URLS = {
 // ─── Mongoose Schema ──────────────────────────────────────────────────────────
 const CommunityMemberSchema = new mongoose.Schema(
   {
-    name:      { type: String, required: true },
-    username:  { type: String, unique: true, sparse: true },
-    role:      { type: String },
-    bio:       { type: String },
-    linkedin:  { type: String },
+    name: { type: String, required: true },
+    username: { type: String, unique: true, sparse: true },
+    role: { type: String },
+    bio: { type: String },
+    linkedin: { type: String },
     instagram: { type: String },
-    phone:     { type: String },
-    email:     { type: String, required: true, unique: true, lowercase: true },
-    password:  { type: String },
-    photoUrl:  { type: String },
-    status:    { type: String, enum: ["active", "inactive"], default: "active" },
+    phone: { type: String },
+    email: { type: String, required: true, unique: true, lowercase: true },
+    password: { type: String },
+    photoUrl: { type: String },
+    status: { type: String, enum: ["active", "inactive"], default: "active" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const CommunityMember =
@@ -102,12 +104,13 @@ function normalisePhone(raw) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 async function main() {
   console.log("🔗 Connecting to MongoDB…");
-  await mongoose.connect(MONGO_URL);
+  const dbName = process.env.DB_NAME || "business_orbit";
+  await mongoose.connect(MONGO_URL, { dbName });
   console.log("✅ MongoDB connected\n");
 
   const jsonPath = path.resolve(
     __dirname,
-    "../../Business_Orbit_Community_Member_Spotlight_Responses.json"
+    "../../Docs/Business_Orbit_Community_Member_Spotlight_Responses.json",
   );
   const rawMembers = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 
@@ -122,20 +125,24 @@ async function main() {
   let skipped = 0;
 
   for (const raw of rawMembers) {
-    const email = (raw["Email"] || raw["Email Address"] || "").trim().toLowerCase();
+    const email = (raw["Email"] || raw["Email Address"] || "")
+      .trim()
+      .toLowerCase();
     if (!email) {
       console.log(`⚠️  Skipping entry with no email: ${raw["Name"]}`);
       skipped++;
       continue;
     }
 
-    const name      = raw["Name"].trim();
-    const role      = (raw["Company & Designation"] || "").trim();
-    const bio       = (raw["Tell us about yourself"] || "").trim();
-    const linkedin  = normaliseLinkedin(raw["LinkedIn Profile URL"]);
-    const instagram = normaliseInstagram(raw["Instagram Profile URL\n"] || raw["Instagram Profile URL"]);
-    const phone     = normalisePhone(raw["Phone Number"]);
-    const photoUrl  = CLOUDINARY_URLS[email] || null;
+    const name = raw["Name"].trim();
+    const role = (raw["Company & Designation"] || "").trim();
+    const bio = (raw["Tell us about yourself"] || "").trim();
+    const linkedin = normaliseLinkedin(raw["LinkedIn Profile URL"]);
+    const instagram = normaliseInstagram(
+      raw["Instagram Profile URL\n"] || raw["Instagram Profile URL"],
+    );
+    const phone = normalisePhone(raw["Phone Number"]);
+    const photoUrl = CLOUDINARY_URLS[email] || null;
 
     const doc = {
       name,
@@ -154,15 +161,23 @@ async function main() {
 
     if (existing) {
       // Only patch — don't overwrite existing data
+      const updateData = { photoUrl: photoUrl || existing.photoUrl };
+      if (!existing.password) {
+        updateData.password = hashedPassword;
+      }
       await CommunityMember.updateOne(
         { email },
-        { $set: { photoUrl: photoUrl || existing.photoUrl } }
+        { $set: updateData },
       );
-      console.log(`🔄 Updated photoUrl for existing member: ${name} (${email})`);
+      console.log(
+        `🔄 Updated photoUrl for existing member: ${name} (${email})`,
+      );
       updated++;
     } else {
       await CommunityMember.create(doc);
-      console.log(`✅ Created member: ${name} (${email})${photoUrl ? " [photo ✅]" : " [no photo — initials fallback]"}`);
+      console.log(
+        `✅ Created member: ${name} (${email})${photoUrl ? " [photo ✅]" : " [no photo — initials fallback]"}`,
+      );
       created++;
     }
   }

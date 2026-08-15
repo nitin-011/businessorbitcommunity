@@ -21,20 +21,20 @@ const MemberSkeleton = () => (
   <div className="flex flex-col sm:flex-row bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden sm:h-[260px] animate-pulse">
     {/* Photo panel skeleton */}
     <div className="w-full h-52 sm:h-full sm:w-[220px] md:w-[240px] lg:w-[260px] shrink-0 bg-white/[0.05] sm:border-r border-b sm:border-b-0 border-white/10" />
-    
+
     {/* Content skeleton */}
     <div className="flex-1 p-5 sm:p-6 flex flex-col">
       <div className="mb-4">
         <div className="h-6 bg-white/10 rounded w-1/2 mb-2" />
         <div className="h-4 bg-white/10 rounded w-1/3" />
       </div>
-      
+
       <div className="flex-1 space-y-2 mb-6">
         <div className="h-4 bg-white/10 rounded w-full" />
         <div className="h-4 bg-white/10 rounded w-[90%]" />
         <div className="h-4 bg-white/10 rounded w-[80%]" />
       </div>
-      
+
       <div className="mt-auto flex justify-between items-center pt-3 border-t border-white/10">
         <div className="flex gap-2">
           <div className="w-8 h-8 rounded-full bg-white/10" />
@@ -72,7 +72,8 @@ export default function CommunityPage() {
     isError,
   } = useQuery({
     queryKey: ["communityMembers"],
-    queryFn: () => communityAPI.getMembers({ limit: 100 }).then((res) => res.data),
+    queryFn: () =>
+      communityAPI.getMembers({ limit: 100 }).then((res) => res.data),
     enabled: status === "directory",
   });
 
@@ -95,7 +96,8 @@ export default function CommunityPage() {
       setStatus("directory");
     } catch (err: any) {
       setLoginError(
-        err?.response?.data?.message || "Invalid credentials. Please check and try again."
+        err?.response?.data?.message ||
+          "Invalid credentials. Please check and try again.",
       );
       setStatus("login");
     }
@@ -169,152 +171,152 @@ export default function CommunityPage() {
                 transition={{ duration: 0.4, ease: "easeOut" }}
                 className="max-w-md mx-auto"
               >
-              <div className="text-center mb-8">
-                <div className="w-12 h-12 rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 flex items-center justify-center mx-auto mb-5">
-                  <Lock className="w-5 h-5 text-[#D4FF3F]" />
-                </div>
-                <h1
-                  className={`${bebas.className} text-[32px] md:text-[40px] text-[#F5F5F5] uppercase leading-[1.1] mb-2`}
-                >
-                  Access to Community
-                </h1>
-                <p className="text-[15px] text-[#A1A1A1]">
-                  Sign in to browse member profiles and connect with the
-                  community.
-                </p>
-              </div>
-
-              {/* Inline error banner */}
-              {loginError && (
-                <div className="mb-5 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
-                  {loginError}
-                </div>
-              )}
-
-              <div className="bg-[#FFFFFF] rounded-2xl p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
-                <form
-                  onSubmit={handleLogin}
-                  className="space-y-4"
-                  data-testid="community-login-form"
-                >
-                  <div>
-                    <label
-                      htmlFor="community-email"
-                      className="block text-[#111111] font-medium mb-1.5 text-sm"
-                    >
-                      Email or Username
-                    </label>
-                    <input
-                      id="community-email"
-                      type="text"
-                      value={credentials.identifier}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          identifier: e.target.value,
-                        })
-                      }
-                      className={inputClasses}
-                      placeholder="jane@example.com or jane892"
-                      data-testid="community-email-input"
-                      required
-                    />
+                <div className="text-center mb-8">
+                  <div className="w-12 h-12 rounded-full bg-[#D4FF3F]/10 border border-[#D4FF3F]/30 flex items-center justify-center mx-auto mb-5">
+                    <Lock className="w-5 h-5 text-[#D4FF3F]" />
                   </div>
-
-                  <div>
-                    <label
-                      htmlFor="community-password"
-                      className="block text-[#111111] font-medium mb-1.5 text-sm"
-                    >
-                      Password
-                    </label>
-                    <input
-                      id="community-password"
-                      type="password"
-                      value={credentials.password}
-                      onChange={(e) =>
-                        setCredentials({
-                          ...credentials,
-                          password: e.target.value,
-                        })
-                      }
-                      className={inputClasses}
-                      placeholder="••••••••"
-                      data-testid="community-password-input"
-                      required
-                    />
-                  </div>
-
-                  <div className="pt-2">
-                    <button
-                      type="submit"
-                      disabled={status === "processing"}
-                      data-testid="community-login-submit"
-                      className="w-full px-6 py-4 bg-[#D4FF3F] text-black rounded-full font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(212,255,63,0.5)] disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
-                    >
-                      {status === "processing" ? "Signing In..." : "Sign In"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="directory"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-            >
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
-                <div>
                   <h1
-                    className={`${bebas.className} text-[32px] md:text-[44px] text-[#F5F5F5] uppercase leading-[1.1] mb-2`}
+                    className={`${bebas.className} text-[32px] md:text-[40px] text-[#F5F5F5] uppercase leading-[1.1] mb-2`}
                   >
-                    Community Members
+                    Access to Community
                   </h1>
                   <p className="text-[15px] text-[#A1A1A1]">
-                    {isLoading
-                      ? "Loading..."
-                      : `${membersCount} members and counting.`}
+                    Sign in to browse member profiles and connect with the
+                    community.
                   </p>
                 </div>
-                <button
-                  onClick={handleSignOut}
-                  data-testid="community-sign-out"
-                  className="inline-flex items-center gap-2 text-[#A1A1A1] hover:text-[#F5F5F5] text-sm transition-colors self-start sm:self-auto"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </button>
-              </div>
 
-              <div
-                data-testid="community-member-grid"
-                className="grid grid-cols-1 gap-6"
-              >
-                {isLoading ? (
-                  <>
-                    <MemberSkeleton />
-                    <MemberSkeleton />
-                    <MemberSkeleton />
-                  </>
-                ) : isError ? (
-                  <div className="text-red-400 p-4 border border-red-400/20 rounded-xl bg-red-400/5">
-                    Failed to load community members. Please try again later.
+                {/* Inline error banner */}
+                {loginError && (
+                  <div className="mb-5 px-4 py-3 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
+                    {loginError}
                   </div>
-                ) : members.length === 0 ? (
-                  <div className="text-[#A1A1A1] p-8 text-center border border-white/10 rounded-xl bg-white/5">
-                    No community members found.
-                  </div>
-                ) : (
-                  members.map((member: CommunityMember) => (
-                    <CommunityMemberCard key={member.email} member={member} />
-                  ))
                 )}
-              </div>
-            </motion.div>
-          )}
+
+                <div className="bg-[#FFFFFF] rounded-2xl p-6 md:p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                  <form
+                    onSubmit={handleLogin}
+                    className="space-y-4"
+                    data-testid="community-login-form"
+                  >
+                    <div>
+                      <label
+                        htmlFor="community-email"
+                        className="block text-[#111111] font-medium mb-1.5 text-sm"
+                      >
+                        Email or Username
+                      </label>
+                      <input
+                        id="community-email"
+                        type="text"
+                        value={credentials.identifier}
+                        onChange={(e) =>
+                          setCredentials({
+                            ...credentials,
+                            identifier: e.target.value,
+                          })
+                        }
+                        className={inputClasses}
+                        placeholder="jane@example.com or jane892"
+                        data-testid="community-email-input"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="community-password"
+                        className="block text-[#111111] font-medium mb-1.5 text-sm"
+                      >
+                        Password
+                      </label>
+                      <input
+                        id="community-password"
+                        type="password"
+                        value={credentials.password}
+                        onChange={(e) =>
+                          setCredentials({
+                            ...credentials,
+                            password: e.target.value,
+                          })
+                        }
+                        className={inputClasses}
+                        placeholder="••••••••"
+                        data-testid="community-password-input"
+                        required
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={status === "processing"}
+                        data-testid="community-login-submit"
+                        className="w-full px-6 py-4 bg-[#D4FF3F] text-black rounded-full font-bold text-[16px] tracking-wide transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_20px_rgba(212,255,63,0.5)] disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
+                      >
+                        {status === "processing" ? "Signing In..." : "Sign In"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="directory"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4, ease: "easeOut" }}
+              >
+                <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+                  <div>
+                    <h1
+                      className={`${bebas.className} text-[32px] md:text-[44px] text-[#F5F5F5] uppercase leading-[1.1] mb-2`}
+                    >
+                      Community Members
+                    </h1>
+                    <p className="text-[15px] text-[#A1A1A1]">
+                      {isLoading
+                        ? "Loading..."
+                        : `${membersCount} members and counting.`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleSignOut}
+                    data-testid="community-sign-out"
+                    className="inline-flex items-center gap-2 text-[#A1A1A1] hover:text-[#F5F5F5] text-sm transition-colors self-start sm:self-auto"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sign Out
+                  </button>
+                </div>
+
+                <div
+                  data-testid="community-member-grid"
+                  className="grid grid-cols-1 gap-6"
+                >
+                  {isLoading ? (
+                    <>
+                      <MemberSkeleton />
+                      <MemberSkeleton />
+                      <MemberSkeleton />
+                    </>
+                  ) : isError ? (
+                    <div className="text-red-400 p-4 border border-red-400/20 rounded-xl bg-red-400/5">
+                      Failed to load community members. Please try again later.
+                    </div>
+                  ) : members.length === 0 ? (
+                    <div className="text-[#A1A1A1] p-8 text-center border border-white/10 rounded-xl bg-white/5">
+                      No community members found.
+                    </div>
+                  ) : (
+                    members.map((member: CommunityMember) => (
+                      <CommunityMemberCard key={member.email} member={member} />
+                    ))
+                  )}
+                </div>
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
       </div>

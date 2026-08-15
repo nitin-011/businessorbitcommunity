@@ -1,33 +1,38 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { Bebas_Neue } from 'next/font/google';
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { Bebas_Neue } from "next/font/google";
 
-const bebas = Bebas_Neue({ subsets: ['latin'], weight: '400' });
+const bebas = Bebas_Neue({ subsets: ["latin"], weight: "400" });
 
 export default function FinalCTA() {
   return (
     <>
-      <style dangerouslySetInnerHTML={{__html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         @import url('https://fonts.cdnfonts.com/css/glacial-indifference-2');
         .font-glacial { font-family: 'Glacial Indifference', sans-serif; }
-      `}} />
-      <section 
-        data-testid="final-cta-section" 
+      `,
+        }}
+      />
+      <section
+        data-testid="final-cta-section"
         className="relative py-[100px] md:py-[160px] bg-gradient-to-b from-[#FAFAFA] to-[#F3F4F6] overflow-hidden flex flex-col items-center justify-center text-center"
       >
         {/* Light Noise Texture Overlay */}
-        <div 
-          className="pointer-events-none absolute inset-0 z-0 opacity-[0.02]" 
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} 
+        <div
+          className="pointer-events-none absolute inset-0 z-0 opacity-[0.02]"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
         />
 
         {/* Center Radial Glow for CTA area */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-[#D4FF3F]/[0.15] blur-[80px] md:blur-[120px] rounded-full pointer-events-none z-0" />
 
         <div className="relative z-10 w-full max-w-[700px] px-[24px]">
-          
           <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -83,7 +88,6 @@ export default function FinalCTA() {
             <span className="hidden md:inline text-[#D1D5DB]">•</span>
             <span>Built by real builders</span>
           </motion.div>
-
         </div>
       </section>
     </>

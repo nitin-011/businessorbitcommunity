@@ -11,10 +11,10 @@ const createAdmin = async (): Promise<void> => {
 
   if (args.length < 3) {
     console.error(
-      "Usage: npx ts-node scripts/create_admin.ts <name> <email> <password> [role]"
+      "Usage: npx ts-node scripts/create_admin.ts <name> <email> <password> [role]",
     );
     console.error(
-      "Example: npx ts-node scripts/create_admin.ts \"John Doe\" john@example.com mysecurepassword"
+      'Example: npx ts-node scripts/create_admin.ts "John Doe" john@example.com mysecurepassword',
     );
     process.exit(1);
   }
@@ -28,7 +28,9 @@ const createAdmin = async (): Promise<void> => {
 
     const existingAdmin = await Admin.findOne({ email: normalizedEmail });
     if (existingAdmin) {
-      console.error(`❌ Admin user with email '${normalizedEmail}' already exists.`);
+      console.error(
+        `❌ Admin user with email '${normalizedEmail}' already exists.`,
+      );
       process.exit(1);
     }
 
@@ -42,7 +44,7 @@ const createAdmin = async (): Promise<void> => {
     });
 
     console.log(
-      `✅ Admin user '${name}' created successfully with email '${normalizedEmail}' and role '${role}'.`
+      `✅ Admin user '${name}' created successfully with email '${normalizedEmail}' and role '${role}'.`,
     );
   } catch (error) {
     console.error("❌ Error creating admin:", error);

@@ -10,7 +10,7 @@ Before testing, verify your backend `.env` contains:
 ```env
 # MongoDB and Auth
 MONGO_URL=mongodb://localhost:27017/business_orbit
-JWT_SECRET=your_jwt_secret_here
+JWT_SECRET=sandbox_jwt_secret
 
 # Email (Resend)
 RESEND_API_KEY=your_resend_api_key
@@ -20,10 +20,12 @@ EMAIL_FROM=your_verified_domain_email
 CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
 
 # PhonePe (Payments)
-PHONEPE_ENV=PRODUCTION
-PHONEPE_MERCHANT_ID=SU2512051700428638464582
-PHONEPE_SALT_KEY=b2dc0e25-ad2d-4bd4-86a2-c6a64730ebba
+PHONEPE_ENV=SANDBOX
+PHONEPE_MERCHANT_ID=sandbox_merchant_id
+PHONEPE_SALT_KEY=sandbox_salt_key
 PHONEPE_SALT_INDEX=1
+
+*(Note: Inject real secrets securely through your local environment configuration. Exposed credentials must never be committed and should be rotated if exposed.)*
 ```
 
 Start the application stack:
@@ -42,8 +44,7 @@ When an admin approves a Student or Business application, the backend automatica
 2. **Admin Login:** Go to `http://localhost:3000/admin`, log in with `admin@businessorbit.in` / `admin123`.
 3. **Approve:** In the dashboard under "Pending Applications", click **Approve** on the new student.
 4. **Verification:** 
-   - Check your terminal running the backend. You should see a log of the generated password (e.g., `Generated password for ...: [PASSWORD]`). 
-   - Check the `communitymembers` collection in MongoDB. The new user should exist with a `role` of `student` and a hashed password.
+   - Use a disposable local fixture and controlled test inbox (or fixture) to verify password delivery. The new user should exist in the `communitymembers` collection with a `role` of `student` and a hashed password.
 
 ---
 
@@ -73,19 +74,7 @@ Members can update their bio, social links, and upload a profile photo via Cloud
 
 ## Phase 4: Orbit Card Payment Integration (PhonePe)
 
-This tests the end-to-end checkout flow using PhonePe Production credentials.
-
-**Test Steps:**
-1. **Initiate Checkout:** Go to `http://localhost:3000/orbit-card/checkout` (must be logged in as a community member).
-2. **Submit Address:** Fill in a shipping address and submit.
-3. **Order Creation:** The backend `POST /api/community/card/checkout` creates an `OrbitCardOrder` in MongoDB with `status: 'PENDING'`. 
-4. **PhonePe Redirect:** The API generates a base64 SHA256 checksum and communicates with PhonePe's Hermes API (`https://api.phonepe.com/apis/hermes/pg/v1/pay`). The browser will redirect to PhonePe's hosted payment page.
-5. **Complete Payment:** Execute a real or UPI testing transaction via the PhonePe gateway. 
-6. **Webhook Verification:** Upon success, PhonePe fires a webhook to `POST /api/community/card/webhook`.
-   - The backend finds the order by `transactionId` and updates it to `status: 'SUCCESS'`.
-   - Verify the `orbitcardorders` collection in MongoDB to ensure the status changed from PENDING to SUCCESS.
-
----
+This tests the checkout flow. Use a PhonePe-supported sandbox or mocked payment provider by default. Do not use production credentials or real transactions for routine checkout tests. Production live-payment testing is moved to a separately approved runbook with explicit charge amounts and refund controls.
 
 ## Phase 5: Admin Order Fulfillment & Export
 

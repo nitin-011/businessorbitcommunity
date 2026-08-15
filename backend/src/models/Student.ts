@@ -1,3 +1,8 @@
+/**
+ * @file Student.ts
+ * @description Mongoose schema for student registrations.
+ * @architecture Unique index on email; tracks OTP for email verification and approval status.
+ */
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IStudent extends Document {
@@ -33,4 +38,7 @@ const StudentSchema = new Schema<IStudent>(
   { timestamps: true },
 );
 
+/**
+ * @module Student
+ */
 export const Student = mongoose.model<IStudent>("Student", StudentSchema);

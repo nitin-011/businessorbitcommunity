@@ -1,9 +1,19 @@
+/**
+ * @file controller.ts
+ * @description Business module controllers for handling new applications and admin approvals.
+ * @architecture Handles business onboarding requests and integrates with the CommunityMember model and email utilities for approvals.
+ */
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import { Business } from "../../models/Business";
 import { CommunityMember } from "../../models/CommunityMember";
 import { sendWelcomeEmail, sendApprovalEmail } from "../../utils/email";
 
+/**
+ * @desc    Submit a new business application and send a welcome email
+ * @route   POST /api/business/apply
+ * @access  Public
+ */
 export const apply = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, company, role, stage, email, phone } = req.body;
@@ -45,6 +55,11 @@ export const apply = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * @desc    Approve a pending business application, generate credentials, create a community member profile, and send approval email
+ * @route   POST /api/business/admin/approve/:id
+ * @access  Private (Admin)
+ */
 export const adminApprove = async (
   req: Request,
   res: Response,

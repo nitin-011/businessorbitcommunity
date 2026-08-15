@@ -1,10 +1,16 @@
+/**
+ * @file server.ts
+ * @description Application entry point and Express server configuration.
+ * @architecture Bootstraps the Express application, configures global middleware, registers route modules, and connects to the database.
+ */
 import express, { Request, Response } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import helmet from "helmet";
+import morgan from "morgan";
 import { connectDatabase } from "./config/database";
 import { config } from "./config/env";
-
 
 import authRoutes from "./modules/auth/routes";
 import businessRoutes from "./modules/business/routes";
@@ -16,7 +22,11 @@ dotenv.config();
 
 const app = express();
 
+// Trust reverse proxy (e.g., ngrok, nginx) so rate limiters can correctly read X-Forwarded-For
+app.set("trust proxy", 1);
+
 // Middleware
+app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -27,8 +37,7 @@ app.use(
       const isAllowed = config.corsOrigins.some(
         (allowedOrigin) =>
           origin === allowedOrigin ||
-          origin === allowedOrigin.replace(/\/$/, "") ||
-          allowedOrigin === "*",
+          origin === allowedOrigin.replace(/\/$/, ""),
       );
 
       if (isAllowed) {
@@ -47,9 +56,10 @@ app.use(
     ],
   }),
 );
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(morgan("dev"));
 
 // Routes
 app.use("/api/auth", authRoutes);
@@ -69,6 +79,10 @@ app.get("/api", (req: Request, res: Response) => {
 });
 
 // Start server
+/**
+ * @desc    Initializes database connections and starts the Express server
+ * @returns {Promise<void>} Resolves when the server is listening
+ */
 const startServer = async () => {
   try {
     await connectDatabase();
@@ -83,4 +97,12 @@ const startServer = async () => {
   }
 };
 
-startServer();
+if (require.main === module) {
+  startServer();
+}
+
+/**
+ * @module app
+ * @description Configured Express application instance for testing and serverless deployment
+ */
+export default app;

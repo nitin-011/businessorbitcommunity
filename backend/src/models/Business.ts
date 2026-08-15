@@ -1,3 +1,8 @@
+/**
+ * @file Business.ts
+ * @description Mongoose schema for business members.
+ * @architecture Unique index on email; sparse unique index on username; tracks approval status.
+ */
 import mongoose, { Schema, Document } from "mongoose";
 
 export interface IBusiness extends Document {
@@ -35,4 +40,7 @@ const BusinessSchema = new Schema<IBusiness>(
   { timestamps: true },
 );
 
+/**
+ * @module Business
+ */
 export const Business = mongoose.model<IBusiness>("Business", BusinessSchema);
