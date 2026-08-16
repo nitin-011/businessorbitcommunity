@@ -2,6 +2,27 @@ import request from "supertest";
 import express from "express";
 import cookieParser from "cookie-parser";
 import mongoose from "mongoose";
+
+jest.mock("@phonepe-pg/pg-sdk-node", () => ({
+  Env: { PRODUCTION: "PRODUCTION", SANDBOX: "SANDBOX" },
+  StandardCheckoutPayRequest: {
+    builder: jest.fn().mockReturnThis(),
+    merchantOrderId: jest.fn().mockReturnThis(),
+    amount: jest.fn().mockReturnThis(),
+    redirectUrl: jest.fn().mockReturnThis(),
+    build: jest.fn().mockReturnValue({}),
+  },
+  StandardCheckoutClient: {
+    getInstance: jest.fn().mockReturnValue({
+      pay: jest.fn().mockResolvedValue({ redirectUrl: "https://phonepe.com/pay" }),
+      getOrderStatus: jest.fn().mockResolvedValue({
+        state: "COMPLETED",
+        transactionId: "P12345",
+      }),
+    }),
+  },
+}));
+
 import communityRoutes from "../routes";
 import { CommunityMember } from "../../../models/CommunityMember";
 import { OrbitCardOrder } from "../../../models/OrbitCardOrder";
@@ -30,6 +51,16 @@ describe("Community Routes", () => {
   });
 
   it("should fetch paginated community members", async () => {
+    const jwt = require("jsonwebtoken");
+    const token = jwt.sign(
+      {
+        id: "507f1f77bcf86cd799439011",
+        email: "test@example.com",
+        role: "community",
+      },
+      process.env.JWT_SECRET || "secret",
+    );
+
     const mockMembers = [
       { name: "John Doe", role: "Developer", status: "active" },
       { name: "Jane Smith", role: "Designer", status: "active" },
@@ -48,9 +79,9 @@ describe("Community Routes", () => {
 
     jest.spyOn(CommunityMember, "countDocuments").mockResolvedValue(2);
 
-    const res = await request(app).get(
-      "/api/community/members?page=1&limit=10",
-    );
+    const res = await request(app)
+      .get("/api/community/members?page=1&limit=10")
+      .set("Cookie", [`token=${token}`]);
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
@@ -160,48 +191,32 @@ describe("Community Routes", () => {
         status: "PENDING",
       } as any);
 
-      jest.spyOn(axios, "post").mockResolvedValue({
-        data: {
-          data: {
-            instrumentResponse: {
-              redirectInfo: {
-                url: "https://phonepe.com/pay",
-              },
-            },
-          },
-        },
-      });
-
       const res = await request(app)
         .post("/api/community/card/checkout")
         .set("Cookie", [`token=${token}`])
-        .send({ shippingAddress: "123 Test St" });
+        .send({
+          shippingAddress: "123 Test St",
+          fullName: "John Doe",
+          companyAndDesignation: "CEO at ACME",
+          email: "test@example.com",
+          phone: "1234567890"
+        });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data.paymentUrl).toBe("https://phonepe.com/pay");
+      expect(res.body.data.paymentUrl).toMatch(/phonepe\.com/);
     });
 
-    it("should handle successful webhook", async () => {
+    it("should handle successful payment redirect", async () => {
       jest
         .spyOn(OrbitCardOrder, "findOneAndUpdate")
         .mockResolvedValue({} as any);
 
-      const payload = Buffer.from(
-        JSON.stringify({
-          code: "PAYMENT_SUCCESS",
-          data: {
-            merchantTransactionId: "T12345",
-            transactionId: "P12345",
-          },
-        }),
-      ).toString("base64");
-
       const res = await request(app)
-        .post("/api/community/card/webhook")
-        .send({ response: payload });
+        .post("/api/community/card/payment-status")
+        .send({ transactionId: "T12345" });
 
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(302);
       expect(OrbitCardOrder.findOneAndUpdate).toHaveBeenCalledWith(
         { transactionId: "T12345" },
         { status: "SUCCESS", providerReferenceId: "P12345" },
