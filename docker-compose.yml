@@ -12,6 +12,12 @@ services:
       - backend
     restart: unless-stopped
 
+  mongodb:
+    image: mongo:6
+    expose:
+      - "27017"
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
@@ -21,9 +27,11 @@ services:
     environment:
       - PORT=8001
       - NODE_ENV=production
-      # - MONGO_URL=mongodb+srv://... (Define in AWS / production)
+      - MONGO_URL=mongodb://mongodb:27017/business_orbit
       - JWT_SECRET=test_secret_for_local_loadbalancer_test
       - CORS_ORIGINS=*
+    depends_on:
+      - mongodb
     restart: unless-stopped
 
   frontend:
@@ -36,3 +44,4 @@ services:
       - NODE_ENV=production
       # - NEXT_PUBLIC_API_URL=http://your-backend-domain.com
     restart: unless-stopped
+
