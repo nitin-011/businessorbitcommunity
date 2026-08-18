@@ -28,7 +28,7 @@ services:
       dockerfile: Dockerfile
     expose:
       - "3000"
-    environment:
-      - NODE_ENV=production
+    env_file:
+      - ./frontend/.env
     restart: unless-stopped
 
