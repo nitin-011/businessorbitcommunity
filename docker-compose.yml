@@ -22,8 +22,8 @@ services:
       - PORT=8001
       - NODE_ENV=production
       # - MONGO_URL=mongodb+srv://... (Define in AWS / production)
-      # - JWT_SECRET=...
-      # - CORS_ORIGINS=...
+      - JWT_SECRET=test_secret_for_local_loadbalancer_test
+      - CORS_ORIGINS=*
     restart: unless-stopped
 
   frontend:
