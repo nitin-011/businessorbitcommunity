@@ -20,6 +20,9 @@ export interface IOrbitCardOrder extends Document {
   updatedAt: Date;
 }
 
+/**
+ * @description Mongoose schema definition for Orbit Card Orders
+ */
 const OrbitCardOrderSchema = new Schema<IOrbitCardOrder>(
   {
     memberId: { type: Schema.Types.ObjectId, ref: "CommunityMember" },

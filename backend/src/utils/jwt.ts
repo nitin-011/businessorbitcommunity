@@ -18,7 +18,7 @@ export interface TokenPayload {
  * @returns {string} The signed JWT access token
  */
 export const generateAccessToken = (payload: TokenPayload): string => {
-  return jwt.sign(payload, config.jwtSecret, { expiresIn: "15m" });
+  return jwt.sign(payload, config.jwtSecret, { expiresIn: "7d" });
 };
 
 /**

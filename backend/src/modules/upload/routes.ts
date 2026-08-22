@@ -7,11 +7,16 @@
 import express from "express";
 import { upload } from "../../config/cloudinary";
 import { uploadImage } from "./controller";
+import { authenticate } from "../../middleware/auth";
 
+/**
+ * @constant {Router} router
+ * @description Express router for file upload endpoints
+ */
 const router = express.Router();
 
 // The "image" field is expected in the multipart/form-data request
-router.post("/", upload.single("image"), uploadImage);
+router.post("/", authenticate(["admin", "community"]), upload.single("image"), uploadImage);
 
 /**
  * @module UploadRoutes

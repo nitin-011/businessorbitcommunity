@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file CookieBanner.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import CookieConsent from "react-cookie-consent";
 import { Bebas_Neue } from "next/font/google";
 

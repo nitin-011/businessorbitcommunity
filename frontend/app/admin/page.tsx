@@ -1,10 +1,23 @@
 "use client";
 
+/**
+ * @file page.tsx
+ * @description Admin Dashboard root page component.
+ * @architecture Main administrative interface for managing applications and users. Integrates with React Query for state and mutations.
+ */
+
 import { useState } from "react";
 import { useAdminAuth } from "./AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { adminAPI } from "@/lib/api";
-import { LogOut, CheckCircle, XCircle, Lock } from "lucide-react";
+import {
+  LogOut,
+  CheckCircle,
+  XCircle,
+  Lock,
+  Loader2,
+  User,
+} from "lucide-react";
 import { Bebas_Neue } from "next/font/google";
 import InteractiveSphere from "@/components/InteractiveSphere";
 
@@ -21,7 +34,16 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<
     "pending" | "rejected" | "members"
   >("pending");
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
   const queryClient = useQueryClient();
+
+  const showToast = (message: string, type: "success" | "error") => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const { data: stats } = useQuery({
     queryKey: ["admin-stats"],
@@ -48,20 +70,36 @@ export default function AdminPage() {
   });
 
   const approveMutation = useMutation({
-    mutationFn: ({ id }: { id: string }) => adminAPI.approve("business", id),
-    onSuccess: () => {
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      adminAPI.approve("business", id),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-business"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       queryClient.invalidateQueries({ queryKey: ["admin-members"] });
+      showToast(`Successfully approved ${variables.name}`, "success");
+    },
+    onError: (error: any) => {
+      showToast(
+        error.response?.data?.message || "Failed to approve application",
+        "error",
+      );
     },
   });
 
   const rejectMutation = useMutation({
-    mutationFn: ({ id }: { id: string }) => adminAPI.reject("business", id),
-    onSuccess: () => {
+    mutationFn: ({ id, name }: { id: string; name: string }) =>
+      adminAPI.reject("business", id),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["admin-business"] });
       queryClient.invalidateQueries({ queryKey: ["admin-stats"] });
       queryClient.invalidateQueries({ queryKey: ["admin-members"] });
+      showToast(`Successfully rejected ${variables.name}`, "success");
+    },
+    onError: (error: any) => {
+      showToast(
+        error.response?.data?.message || "Failed to reject application",
+        "error",
+      );
     },
   });
 
@@ -205,17 +243,35 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-light-bg flex">
-      <div className="w-64 bg-[#0A0A0A] border-r border-border-dark min-h-screen p-6 relative">
+      <div className="w-64 bg-[#0A0A0A] border-r border-border-dark min-h-screen p-6 flex flex-col">
         <h2 className="text-2xl font-heading font-bold text-white mb-8">
           Business Orbit
         </h2>
-        <button
-          onClick={logout}
-          className="w-full absolute bottom-6 left-6 right-6 px-4 py-3 text-white/60 hover:text-white transition-colors text-left"
-        >
-          <LogOut size={20} className="inline mr-3" />
-          Logout
-        </button>
+
+        <div className="mt-auto flex flex-col gap-4">
+          <div className="p-4 bg-white/5 border border-white/10 rounded-xl">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white shrink-0">
+                <User size={20} />
+              </div>
+              <div className="overflow-hidden">
+                <p className="text-white font-medium truncate">{admin.name}</p>
+                <p className="text-white/50 text-xs truncate">{admin.email}</p>
+              </div>
+            </div>
+            <div className="inline-block px-2.5 py-1 bg-[#D4FF3F] text-black text-[10px] font-bold uppercase tracking-wider rounded-full">
+              {admin.role.replace("_", " ")}
+            </div>
+          </div>
+
+          <button
+            onClick={logout}
+            className="w-full flex items-center justify-center gap-3 px-4 py-3 text-white/60 hover:text-white hover:bg-white/5 rounded-xl transition-colors"
+          >
+            <LogOut size={18} />
+            <span className="font-medium">Logout</span>
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 p-8">
@@ -304,21 +360,45 @@ export default function AdminPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() =>
-                              approveMutation.mutate({ id: business.id })
+                              approveMutation.mutate({
+                                id: business.id,
+                                name: business.name,
+                              })
+                            }
+                            disabled={
+                              approveMutation.isPending ||
+                              rejectMutation.isPending
                             }
                             aria-label={`Approve ${business.name}`}
-                            className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                            className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
                           >
-                            <CheckCircle size={20} />
+                            {approveMutation.isPending &&
+                            approveMutation.variables?.id === business.id ? (
+                              <Loader2 size={20} className="animate-spin" />
+                            ) : (
+                              <CheckCircle size={20} />
+                            )}
                           </button>
                           <button
                             onClick={() =>
-                              rejectMutation.mutate({ id: business.id })
+                              rejectMutation.mutate({
+                                id: business.id,
+                                name: business.name,
+                              })
+                            }
+                            disabled={
+                              approveMutation.isPending ||
+                              rejectMutation.isPending
                             }
                             aria-label={`Reject ${business.name}`}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                            className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
                           >
-                            <XCircle size={20} />
+                            {rejectMutation.isPending &&
+                            rejectMutation.variables?.id === business.id ? (
+                              <Loader2 size={20} className="animate-spin" />
+                            ) : (
+                              <XCircle size={20} />
+                            )}
                           </button>
                         </div>
                       </td>
@@ -344,11 +424,20 @@ export default function AdminPage() {
                         <div className="flex gap-2">
                           <button
                             onClick={() =>
-                              approveMutation.mutate({ id: business.id })
+                              approveMutation.mutate({
+                                id: business.id,
+                                name: business.name,
+                              })
                             }
-                            className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors"
+                            disabled={approveMutation.isPending}
+                            className="p-2 text-green-600 hover:bg-green-50 rounded transition-colors disabled:opacity-50"
                           >
-                            <CheckCircle size={20} />
+                            {approveMutation.isPending &&
+                            approveMutation.variables?.id === business.id ? (
+                              <Loader2 size={20} className="animate-spin" />
+                            ) : (
+                              <CheckCircle size={20} />
+                            )}
                           </button>
                         </div>
                       </td>
@@ -393,6 +482,24 @@ export default function AdminPage() {
           </div>
         </div>
       </div>
+
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 px-6 py-3 rounded-lg shadow-lg font-medium transform transition-all duration-300 translate-y-0 opacity-100 flex items-center gap-2 ${
+            toast.type === "success"
+              ? "bg-[#D4FF3F] text-black"
+              : "bg-red-500 text-white"
+          }`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircle size={20} />
+          ) : (
+            <XCircle size={20} />
+          )}
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

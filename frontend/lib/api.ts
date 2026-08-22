@@ -1,6 +1,11 @@
+/**
+ * @file api.ts
+ * @description Axios API client and interceptor configurations.
+ * @architecture Centralized networking layer for communicating with the backend. Handles token injection, 401 retries, and error unwrapping.
+ */
 import axios from "axios";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 export const api = axios.create({
   baseURL: `${API_URL}/api`,
@@ -10,6 +15,42 @@ export const api = axios.create({
   },
   withCredentials: true,
 });
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    // 1. Guard against swallowing login errors: If the request was a login attempt, we don't want to try refreshing the token
+    const isLoginRequest = originalRequest.url?.includes('/login');
+    
+    // 2. 401 Intercept: If the API returns Unauthorized (401), we attempt to seamlessly refresh the token
+    if (error.response?.status === 401 && !originalRequest._retry && !isLoginRequest) {
+      originalRequest._retry = true; // Mark to prevent infinite refresh loops
+      try {
+        // Attempt to hit the refresh endpoint. Since we use httpOnly cookies, credentials are sent automatically.
+        await axios.post(`${API_URL}/api/auth/refresh`, {}, { withCredentials: true });
+        
+        // 3. Success: Re-execute the original failed request with the newly issued token
+        return api(originalRequest);
+      } catch (refreshError) {
+        // 4. Failure: The refresh token is also invalid/expired. We must fall back to the login page.
+        if (typeof window !== "undefined") {
+          const path = window.location.pathname;
+          
+          // 5. Infinite reload prevention: We only trigger a hard reload if the user isn't ALREADY on the login route
+          // The local React component catch blocks will handle the UI state swap (e.g., setStatus("login"))
+          if (path.startsWith("/admin") && path !== "/admin") {
+            window.location.href = "/admin";
+          } else if (path !== "/community" && path !== "/admin") {
+            window.location.href = "/community";
+          }
+        }
+        return Promise.reject(refreshError);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Business APIs
 export const businessAPI = {

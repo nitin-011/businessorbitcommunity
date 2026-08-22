@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file CommunityMemberCard.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import { useState } from "react";
 import Image from "next/image";
 import {

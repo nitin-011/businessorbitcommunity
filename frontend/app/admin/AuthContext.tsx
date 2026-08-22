@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file AuthContext.tsx
+ * @description Authentication Context for Admin panel.
+ * @architecture Provides global admin state, login, and logout methods using React Context API.
+ */
+
 import {
   createContext,
   useContext,
@@ -36,17 +42,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
         const res = await authAPI.getMe();
         if (isMounted) setAdmin(res.data.admin);
       } catch (err: any) {
-        if (err.response?.status === 401) {
-          try {
-            await authAPI.refresh();
-            const res = await authAPI.getMe();
-            if (isMounted) setAdmin(res.data.admin);
-          } catch (refreshErr) {
-            if (isMounted) setAdmin(null);
-          }
-        } else {
-          if (isMounted) setAdmin(null);
-        }
+        if (isMounted) setAdmin(null);
       } finally {
         if (isMounted) setIsLoading(false);
       }

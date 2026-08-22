@@ -14,6 +14,10 @@ cloudinary.config({
   api_secret: config.cloudinaryApiSecret,
 });
 
+/**
+ * @constant {CloudinaryStorage} storage
+ * @description Configures Multer storage for Cloudinary uploads
+ */
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req, file) => {

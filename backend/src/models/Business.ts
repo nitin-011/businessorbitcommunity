@@ -13,13 +13,14 @@ export interface IBusiness extends Document {
   email: string;
   phone: string;
   username?: string;
-  password?: string;
-  requiresPasswordChange: boolean;
   status: "pending" | "approved" | "rejected";
   createdAt: Date;
   updatedAt: Date;
 }
 
+/**
+ * @description Mongoose schema definition for Business entities
+ */
 const BusinessSchema = new Schema<IBusiness>(
   {
     name: { type: String, required: true },
@@ -29,8 +30,6 @@ const BusinessSchema = new Schema<IBusiness>(
     email: { type: String, required: true, unique: true, lowercase: true },
     phone: { type: String, required: true },
     username: { type: String, unique: true, sparse: true },
-    password: { type: String },
-    requiresPasswordChange: { type: Boolean, default: true },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],

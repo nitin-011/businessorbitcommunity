@@ -99,7 +99,7 @@ describe("Community Routes", () => {
       role: "Role",
     };
 
-    jest.spyOn(CommunityMember, "findOne").mockResolvedValue(mockMember as any);
+    jest.spyOn(CommunityMember, "findOne").mockReturnValue({ select: jest.fn().mockResolvedValue(mockMember) } as any);
     // Note: bcrypt.compare would ideally be mocked, but since we are running npx jest,
     // we can mock verifyPassword here.
     const passwordUtils = require("../../../utils/password");
@@ -116,7 +116,7 @@ describe("Community Routes", () => {
   });
 
   it("should fail login with invalid credentials", async () => {
-    jest.spyOn(CommunityMember, "findOne").mockResolvedValue(null);
+    jest.spyOn(CommunityMember, "findOne").mockReturnValue({ select: jest.fn().mockResolvedValue(null) } as any);
 
     const res = await request(app).post("/api/community/login").send({
       email: "wrong@example.com",

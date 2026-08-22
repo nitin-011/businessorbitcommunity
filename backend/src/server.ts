@@ -20,6 +20,10 @@ import uploadRoutes from "./modules/upload/routes";
 
 dotenv.config();
 
+/**
+ * @constant {express.Application} app
+ * @description Main Express application instance
+ */
 const app = express();
 
 // Trust reverse proxy (e.g., ngrok, nginx) so rate limiters can correctly read X-Forwarded-For
@@ -32,6 +36,9 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
+
+      // If CORS_ORIGINS is set to "*", allow all origins
+      if (config.corsOrigins.includes("*")) return callback(null, true);
 
       // Check if the origin is in the allowed list (ignoring trailing slashes)
       const isAllowed = config.corsOrigins.some(

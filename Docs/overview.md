@@ -125,4 +125,4 @@ URL (see the code comment in `app/business/page.tsx`) — the Mongoose field is 
 
 Admin login → bcrypt-verify password → issue `access_token` (15 min) + `refresh_token`
 (7 day) as httpOnly cookies → `authMiddleware` on all `/api/admin/*` routes reads the
-cookie and verifies. The admin user can be seeded manually using the `backend/scripts/seed_admin.ts` script, which creates the admin user from `ADMIN_EMAIL`/`ADMIN_PASSWORD` env vars if missing, or re-hashes the password if it changed.
+cookie and verifies. The admin user can be seeded manually using the `__helper/create_admin.ts` script, which creates the admin user from CLI arguments.

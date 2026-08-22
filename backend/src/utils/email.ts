@@ -6,6 +6,10 @@
 import nodemailer from "nodemailer";
 import { config } from "../config/env";
 
+/**
+ * @constant {nodemailer.Transporter} transporter
+ * @description Nodemailer transport instance configured with SMTP settings
+ */
 const transporter = nodemailer.createTransport({
   host: config.smtpHost,
   port: config.smtpPort,

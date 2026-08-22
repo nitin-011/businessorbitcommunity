@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file Footer.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import Link from "next/link";
 
 export default function Footer() {

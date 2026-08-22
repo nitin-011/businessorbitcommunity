@@ -12,6 +12,9 @@ export interface ILoginAttempt extends Document {
   lockedUntil?: Date;
 }
 
+/**
+ * @description Mongoose schema definition for tracking login attempts
+ */
 const LoginAttemptSchema = new Schema<ILoginAttempt>({
   identifier: { type: String, required: true, unique: true },
   attempts: { type: Number, default: 0 },

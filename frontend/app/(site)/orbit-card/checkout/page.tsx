@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file page.tsx
+ * @description Orbit Card checkout and payment flow page.
+ * @architecture Handles form validation, initializes PhonePe payments, and polls backend for order completion.
+ */
+
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -133,13 +139,18 @@ function StepIndicator({ step }: { step: "details" | "delivery" }) {
 }
 
 function OrbitCardCheckoutContent() {
-  // NOTE: this order form is fully mocked end to end — no payment gateway, no
-  // backend call, no persistence (not even localStorage), including the
-  // "payment" step below, which is a simulated delay, not a real charge.
-  // Real order/payment handling should replace this rather than extend it in
-  // place — see agent-notes/orbit-card-payment-integration.md for the
-  // planned real flow. The 'error' status branch is scaffolded for that
-  // future integration; nothing in the current mock can actually trigger it.
+  // This order form connects to the real PhonePe payment gateway via the
+  // backend (card.controller.ts). The flow is:
+  //   1. User fills details + delivery address
+  //   2. Frontend POSTs to /api/community/card/checkout
+  //   3. Backend creates an OrbitCardOrder (PENDING), calls PhonePe SDK, and
+  //      returns a paymentUrl
+  //   4. User is redirected to PhonePe for payment
+  //   5. PhonePe redirects to /api/community/card/payment-status, which
+  //      verifies the order state and redirects to the frontend with
+  //      ?payment=success&orderId=... or ?payment=failed
+  //   6. Frontend fetches order details and shows confirmation or error
+  //
   // BACKEND NOTE: `formData.name`, `formData.company`, and
   // `formData.designation` aren't just order data — they're what gets
   // printed on the back of the physical card, combined as "Company —

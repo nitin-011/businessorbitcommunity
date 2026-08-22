@@ -5,12 +5,15 @@
  */
 
 import { Router } from "express";
-import { apply, adminApprove } from "./controller";
+import { apply } from "./controller";
 
+/**
+ * @constant {Router} router
+ * @description Express router for business application endpoints
+ */
 const router = Router();
 
 router.post("/apply", apply);
-router.post("/admin/approve/:id", adminApprove);
 
 /**
  * @module BusinessRoutes

@@ -21,6 +21,9 @@ export interface ICommunityMember extends Document {
   updatedAt: Date;
 }
 
+/**
+ * @description Mongoose schema definition for Community Members
+ */
 const CommunityMemberSchema = new Schema<ICommunityMember>(
   {
     name: { type: String, required: true },
@@ -31,7 +34,7 @@ const CommunityMemberSchema = new Schema<ICommunityMember>(
     instagram: { type: String },
     phone: { type: String },
     email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String },
+    password: { type: String, select: false },
     photoUrl: { type: String },
     status: {
       type: String,

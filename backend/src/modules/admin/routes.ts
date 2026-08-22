@@ -17,6 +17,10 @@ import {
 } from "./controller";
 import { authMiddleware } from "../../middleware/auth";
 
+/**
+ * @constant {Router} router
+ * @description Express router for admin-facing endpoints
+ */
 const router = Router();
 
 // All admin routes require authentication

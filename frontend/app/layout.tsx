@@ -1,3 +1,8 @@
+/**
+ * @file layout.tsx
+ * @description Next.js App Router page/layout for layout.tsx.
+ * @architecture Server or Client component mapping to a specific route segment.
+ */
 import type { Metadata } from "next";
 import "./globals.css";
 import Providers from "./providers";
