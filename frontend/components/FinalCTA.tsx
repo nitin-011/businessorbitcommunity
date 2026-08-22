@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file FinalCTA.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Bebas_Neue } from "next/font/google";

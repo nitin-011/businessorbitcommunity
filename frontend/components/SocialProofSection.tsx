@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file SocialProofSection.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { Bebas_Neue } from "next/font/google";

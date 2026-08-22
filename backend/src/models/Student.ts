@@ -19,6 +19,9 @@ export interface IStudent extends Document {
   updatedAt: Date;
 }
 
+/**
+ * @description Mongoose schema definition for Student applications
+ */
 const StudentSchema = new Schema<IStudent>(
   {
     name: { type: String, required: true },

@@ -1,3 +1,8 @@
+/**
+ * @file layout.tsx
+ * @description Next.js App Router page/layout for layout.tsx.
+ * @architecture Server or Client component mapping to a specific route segment.
+ */
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";

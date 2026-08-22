@@ -30,7 +30,7 @@ ADMIN_PASSWORD=Admin@12345
 
 You can initialize the first admin account by running:
 ```bash
-cd backend && npx ts-node scripts/seed_admin.ts
+cd backend && npx ts-node ../__helper/create_admin.ts "Admin" admin@businessorbit.com Admin@12345
 ```
 
 ### Frontend (`frontend/.env.local`)

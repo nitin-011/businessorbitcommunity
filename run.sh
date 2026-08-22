@@ -7,12 +7,36 @@ FRONTEND_DIR="$ROOT_DIR/frontend"
 
 USE_NGROK=0
 INSTALL_DEPS=0
-for arg in "$@"; do
-  if [ "$arg" = "--ngrok" ]; then
-    USE_NGROK=1
-  elif [ "$arg" = "-i" ] || [ "$arg" = "--install" ]; then
-    INSTALL_DEPS=1
-  fi
+USE_DOCKER=0
+SCALE_FACTOR=1
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --ngrok)
+      USE_NGROK=1
+      shift
+      ;;
+    -i|--install)
+      INSTALL_DEPS=1
+      shift
+      ;;
+    --docker)
+      USE_DOCKER=1
+      shift
+      ;;
+    -s|--scale)
+      if [[ -n "${2:-}" ]] && [[ "$2" =~ ^[0-9]+$ ]]; then
+        SCALE_FACTOR="$2"
+        shift 2
+      else
+        echo "Error: --scale requires a numeric argument"
+        exit 1
+      fi
+      ;;
+    *)
+      shift
+      ;;
+  esac
 done
 
 log() {
@@ -21,12 +45,19 @@ log() {
 
 cleanup() {
   log "Shutting down..."
+  if [ "$USE_DOCKER" = 1 ]; then
+    if command -v docker-compose >/dev/null 2>&1; then
+      (cd "$ROOT_DIR" && docker-compose down)
+    else
+      (cd "$ROOT_DIR" && docker compose down)
+    fi
+  fi
   if command -v kill >/dev/null 2>&1; then
     jobs -pr | xargs -r kill 2>/dev/null || true
   fi
 }
 
-trap cleanup EXIT INT TERM
+trap cleanup EXIT INT TERM HUP
 
 install_deps() {
   local dir="$1"
@@ -51,7 +82,7 @@ if [ "$INSTALL_DEPS" = 1 ]; then
   install_deps "$FRONTEND_DIR" "frontend"
 fi
 
-if [ "$USE_NGROK" = 1 ]; then
+if [ "$USE_NGROK" = 1 ] && [ "$USE_DOCKER" = 0 ]; then
   log "Starting ngrok..."
   if ! command -v ngrok >/dev/null 2>&1; then
     log "ERROR: ngrok is not installed or not in PATH"
@@ -98,23 +129,32 @@ if [ "$USE_NGROK" = 1 ]; then
   log "Ngrok is running at $NGROK_URL"
   export API_URL="$NGROK_URL"
   export NEXT_PUBLIC_API_URL="$NGROK_URL"
-else
+elif [ "$USE_DOCKER" = 0 ]; then
   export API_URL="http://localhost:8001"
   export NEXT_PUBLIC_API_URL="http://localhost:8001"
 fi
 
-log "Starting backend and frontend..."
+if [ "$USE_DOCKER" = 1 ]; then
+  log "Starting project using Docker..."
+  if command -v docker-compose >/dev/null 2>&1; then
+    (cd "$ROOT_DIR" && docker-compose up --build --scale backend="$SCALE_FACTOR" --scale frontend="$SCALE_FACTOR")
+  else
+    (cd "$ROOT_DIR" && docker compose up --build --scale backend="$SCALE_FACTOR" --scale frontend="$SCALE_FACTOR")
+  fi
+else
+  log "Starting backend and frontend locally..."
 
-(
-  cd "$BACKEND_DIR"
-  npm run dev
-) &
-BACKEND_PID=$!
+  (
+    cd "$BACKEND_DIR"
+    npm run dev
+  ) &
+  BACKEND_PID=$!
 
-(
-  cd "$FRONTEND_DIR"
-  npm run dev
-) &
-FRONTEND_PID=$!
+  (
+    cd "$FRONTEND_DIR"
+    npm run dev
+  ) &
+  FRONTEND_PID=$!
 
-wait "$BACKEND_PID" "$FRONTEND_PID"
+  wait "$BACKEND_PID" "$FRONTEND_PID"
+fi

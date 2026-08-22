@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file Navbar.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";

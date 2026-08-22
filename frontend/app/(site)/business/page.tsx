@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file page.tsx
+ * @description Next.js App Router page/layout for page.tsx.
+ * @architecture Server or Client component mapping to a specific route segment.
+ */
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useMutation } from "@tanstack/react-query";

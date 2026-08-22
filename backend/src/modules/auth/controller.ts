@@ -31,9 +31,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     const normalizedEmail = email.toLowerCase();
+    // Create a unique identifier combining IP and email to mitigate targeted brute-force attacks
     const identifier = `${req.ip}:${normalizedEmail}`;
 
     // Check brute force protection
+    // 1. Check if this IP/Email combination is currently locked out
     const loginAttempt = await LoginAttempt.findOne({ identifier });
     if (loginAttempt?.lockedUntil && new Date() < loginAttempt.lockedUntil) {
       res
@@ -42,7 +44,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const admin = await Admin.findOne({ email: normalizedEmail });
+    // 2. Look up the admin. We explicitly select the password hash since it is excluded by default in the schema
+    const admin = await Admin.findOne({ email: normalizedEmail }).select("+password");
     if (!admin) {
       // Increment failed attempts
       await incrementFailedAttempts(identifier);
@@ -58,6 +61,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 
     // Clear failed attempts on successful login
+    // 4. Authentication succeeded: clear any existing failed attempt trackers
     await LoginAttempt.deleteOne({ identifier });
 
     const token = generateAccessToken({
@@ -66,6 +70,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       role: admin.role,
     });
 
+    // Determine if the connection is secure (useful when behind proxies like Nginx or AWS ELB)
     const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
     res.cookie("token", token, {
       httpOnly: true,
@@ -89,6 +94,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
+/**
+ * @desc    Increments the failed login attempt counter for an IP/email
+ * @param   {string} identifier - IP address or email
+ * @returns {Promise<void>}
+ */
 const incrementFailedAttempts = async (identifier: string): Promise<void> => {
   const attempt = await LoginAttempt.findOne({ identifier });
 
@@ -119,7 +129,8 @@ const incrementFailedAttempts = async (identifier: string): Promise<void> => {
  * @access  Public
  */
 export const logout = async (req: Request, res: Response): Promise<void> => {
-  const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
+  // Determine if the connection is secure (useful when behind proxies like Nginx or AWS ELB)
+    const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
   const cookieOptions = {
     httpOnly: true,
     secure: isSecure,
@@ -188,6 +199,7 @@ export const refresh = async (req: Request, res: Response): Promise<void> => {
       role: admin.role,
     });
 
+    // Determine if the connection is secure (useful when behind proxies like Nginx or AWS ELB)
     const isSecure = req.secure || req.headers["x-forwarded-proto"] === "https";
     res.cookie("token", accessToken, {
       httpOnly: true,

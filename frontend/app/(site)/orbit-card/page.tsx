@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file page.tsx
+ * @description Next.js App Router page/layout for page.tsx.
+ * @architecture Server or Client component mapping to a specific route segment.
+ */
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Bebas_Neue } from "next/font/google";

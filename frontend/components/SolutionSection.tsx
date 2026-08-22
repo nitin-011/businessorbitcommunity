@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file SolutionSection.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import { motion } from "framer-motion";
 import { Bebas_Neue } from "next/font/google";
 import { CalendarDays, Star, TrendingUp, Handshake } from "lucide-react";

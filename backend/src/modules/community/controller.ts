@@ -30,10 +30,11 @@ export const getMembers = async (req: Request, res: Response) => {
     const query: any = { status: "active" };
     const search = req.query.search as string;
     if (search) {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
-        { name: { $regex: search, $options: "i" } },
-        { role: { $regex: search, $options: "i" } },
-        { bio: { $regex: search, $options: "i" } },
+        { name: { $regex: escapedSearch, $options: "i" } },
+        { role: { $regex: escapedSearch, $options: "i" } },
+        { bio: { $regex: escapedSearch, $options: "i" } },
       ];
     }
 
@@ -85,11 +86,12 @@ export const login = async (req: Request, res: Response) => {
       });
     }
 
+    // Support authenticating via either email or username
     const query = email
       ? { email: email.trim().toLowerCase() }
       : { username: username.trim().toLowerCase() };
 
-    const member = await CommunityMember.findOne(query);
+    const member = await CommunityMember.findOne(query).select("+password");
 
     if (!member) {
       return res
@@ -97,6 +99,7 @@ export const login = async (req: Request, res: Response) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
+    // Guard clause: Prevent suspended or inactive members from authenticating
     if (member.status !== "active") {
       return res
         .status(403)
@@ -110,6 +113,7 @@ export const login = async (req: Request, res: Response) => {
         .json({ success: false, message: "Invalid credentials" });
     }
 
+    // Issue a 7-day JWT access token containing essential identity claims
     const token = jwt.sign(
       { id: member._id, email: member.email, role: "community" },
       config.jwtSecret,

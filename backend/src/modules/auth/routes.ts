@@ -9,6 +9,10 @@ import { login, logout, getMe, refresh } from "./controller";
 import { authMiddleware } from "../../middleware/auth";
 import { loginLimiter } from "../../middleware/rateLimiter";
 
+/**
+ * @constant {Router} router
+ * @description Express router for authentication endpoints
+ */
 const router = Router();
 
 router.post("/login", loginLimiter, login);

@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 /**
  * @file controller.ts
  * @description Admin module controllers for managing businesses, community members, and orbit card orders.
@@ -20,6 +21,7 @@ import { hashPassword } from "../../utils/password";
  */
 export const getStats = async (req: Request, res: Response): Promise<void> => {
   try {
+    // 1. Fetch aggregate totals for all business applications
     const totalBusiness = await Business.countDocuments();
     const pendingBusiness = await Business.countDocuments({
       status: "pending",
@@ -31,6 +33,7 @@ export const getStats = async (req: Request, res: Response): Promise<void> => {
       status: "rejected",
     });
 
+    // 2. Fetch total active and inactive community members
     const totalMembers = await CommunityMember.countDocuments();
 
     res.json({
@@ -61,10 +64,12 @@ export const getBusiness = async (
     const { status, search, page = 1, limit = 20 } = req.query;
 
     const query: any = {};
+    // Apply status filter if provided (e.g., pending, approved, rejected)
     if (status && status !== "all") {
       query.status = status;
     }
     if (search) {
+      // Sanitize search string to prevent regex injection attacks
       const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
         { name: { $regex: safeSearch, $options: "i" } },
@@ -118,6 +123,7 @@ export const getCommunityMembers = async (
 
     const query: any = {};
     if (search) {
+      // Sanitize search string to prevent regex injection attacks
       const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       query.$or = [
         { name: { $regex: safeSearch, $options: "i" } },
@@ -181,19 +187,30 @@ export const approve = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    business.status = "approved";
-    await business.save();
+    // Initialize a MongoDB session for transactional integrity (all-or-nothing)
+    const session = await mongoose.startSession();
+    let rawPassword;
+    
+    try {
+      await session.withTransaction(async () => {
+        business.status = "approved";
+        await business.save({ session });
 
-    // Create community member
-    const rawPassword = crypto.randomBytes(6).toString("hex");
-    const hashedPassword = await hashPassword(rawPassword);
-    await CommunityMember.create({
-      name: business.name,
-      email: business.email,
-      role: `${business.role} at ${business.company}`,
-      password: hashedPassword,
-      status: "active",
-    });
+        // Create community member
+        // Generate a secure, temporary 12-character hex password for the new member
+        rawPassword = crypto.randomBytes(6).toString("hex");
+        const hashedPassword = await hashPassword(rawPassword);
+        await CommunityMember.create([{
+          name: business.name,
+          email: business.email,
+          role: `${business.role} at ${business.company}`,
+          password: hashedPassword,
+          status: "active",
+        }], { session });
+      });
+    } finally {
+      session.endSession();
+    }
 
     console.log(
       `Created business community member. Email: ${business.email}, Password: ${rawPassword}`,
@@ -236,15 +253,24 @@ export const reject = async (req: Request, res: Response): Promise<void> => {
     }
 
     const wasApproved = business.status === "approved";
-    business.status = "rejected";
-    await business.save();
+    // Initialize a MongoDB session for transactional integrity (all-or-nothing)
+    const session = await mongoose.startSession();
 
-    if (wasApproved) {
-      // Revoke access by deleting CommunityMember record
-      await CommunityMember.deleteOne({ email: business.email });
-      console.log(
-        `Deleted community member record for ${business.email} due to status revocation.`,
-      );
+    try {
+      await session.withTransaction(async () => {
+        business.status = "rejected";
+        await business.save({ session });
+
+        if (wasApproved) {
+          // Revoke access by deleting CommunityMember record
+          await CommunityMember.deleteOne({ email: business.email }, { session });
+          console.log(
+            `Deleted community member record for ${business.email} due to status revocation.`,
+          );
+        }
+      });
+    } finally {
+      session.endSession();
     }
 
     res.json({ message: "Business rejected" });

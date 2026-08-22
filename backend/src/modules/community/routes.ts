@@ -27,10 +27,18 @@ import {
 } from "../../middleware/auth";
 import { loginLimiter } from "../../middleware/rateLimiter";
 
+/**
+ * @constant {Router} router
+ * @description Express router for community-facing endpoints
+ */
 const router = Router();
 
 import { CommunityMember } from "../../models/CommunityMember";
 
+/**
+ * @constant {CloudinaryStorage} storage
+ * @description Configures Multer storage specifically for community profile photos
+ */
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: async (req: any, file: any) => {
@@ -65,6 +73,10 @@ const storage = new CloudinaryStorage({
     };
   },
 });
+/**
+ * @constant {multer.Multer} parser
+ * @description Multer middleware configured with Cloudinary storage
+ */
 const parser = multer({ storage });
 
 router.get("/members", requireCommunityAuth as any, getMembers as any);

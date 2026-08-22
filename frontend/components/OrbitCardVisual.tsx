@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file OrbitCardVisual.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import { motion, AnimatePresence } from "framer-motion";
 
 // Renders `text` as individually animated characters — each letter springs in as

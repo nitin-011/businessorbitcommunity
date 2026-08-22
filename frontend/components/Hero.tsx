@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * @file Hero.tsx
+ * @description React component for the Business Orbit Community application.
+ * @architecture Presentational UI component.
+ */
+
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
