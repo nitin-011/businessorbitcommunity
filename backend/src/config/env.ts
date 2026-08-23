@@ -17,8 +17,6 @@ export const config = {
   dbName: process.env.DB_NAME || "business_orbit",
   jwtSecret: process.env.JWT_SECRET || "",
   corsOrigins: (process.env.CORS_ORIGINS || "http://localhost:3000").split(","),
-  adminEmail: process.env.ADMIN_EMAIL || "admin@businessorbit.com",
-  adminPassword: process.env.ADMIN_PASSWORD || "Admin@12345",
   smtpHost: process.env.SMTP_HOST || "smtp.gmail.com",
   smtpPort: parseInt(process.env.SMTP_PORT || "587"),
   smtpUser: process.env.SMTP_USER || "",
@@ -30,8 +28,6 @@ export const config = {
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
   cloudinaryApiKey: process.env.CLOUDINARY_API_KEY || "",
   cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET || "",
-  phonepeMerchantId:
-    process.env.PHONEPE_MERCHANT_ID || "PLACEHOLDER_MERCHANT_ID",
   phonepeClientId: process.env.PHONEPE_CLIENT_ID || "",
   phonepeClientSecret: process.env.PHONEPE_CLIENT_SECRET || "",
   phonepeClientVersion: process.env.PHONEPE_CLIENT_VERSION || "1",
